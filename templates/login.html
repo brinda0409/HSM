@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In — Smart Hostel Platform</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body {
+            background-color: #0f172a;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(5, 150, 105, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(29, 78, 216, 0.15) 0px, transparent 50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1.5rem;
+        }
+
+        .login-card {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+            width: 100%;
+            max-width: 480px;
+            padding: 2.25rem;
+            box-sizing: border-box;
+        }
+
+        .login-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-brand h2 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.02em;
+        }
+
+        .login-subtitle {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-role-tabs {
+            display: flex;
+            background: #f1f5f9;
+            padding: 0.25rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .role-tab {
+            flex: 1;
+            padding: 0.6rem 0.5rem;
+            border: none;
+            background: transparent;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #64748b;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+
+        .role-tab.active {
+            background: #ffffff;
+            color: #0f172a;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            color: #0f172a;
+            outline: none;
+            transition: border-color 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .form-control:focus {
+            border-color: #059669;
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: #0f172a;
+            color: #ffffff;
+            border: none;
+            padding: 0.85rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .btn-submit:hover {
+            background: #1e293b;
+        }
+
+        .demo-accounts-box {
+            margin-top: 1.75rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .demo-title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .demo-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .demo-btn {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 0.6rem 0.85rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.15s ease;
+        }
+
+        .demo-btn:hover {
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+            color: #047857;
+        }
+
+        .demo-badge {
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            background: #e2e8f0;
+            color: #475569;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="login-brand">
+            <span style="color: #059669; display: inline-flex;">
+                <svg class="svg-icon icon-lg" viewBox="0 0 24 24"><path d="M3 21h18M3 7v14M21 7v14M6 21V10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v11M9 13h2v3H9zM13 13h2v3h-2zM9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            </span>
+            <h2>SmartHostel</h2>
+        </div>
+        <p class="login-subtitle">Sign in to access your student portal or warden administration dashboard.</p>
+
+        <!-- Role Selector Tabs -->
+        <div class="login-role-tabs">
+            <button type="button" class="role-tab active" id="tabStudent" onclick="selectRole('student')">
+                <svg class="svg-icon icon-sm" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                STUDENT LOGIN
+            </button>
+            <button type="button" class="role-tab" id="tabWarden" onclick="selectRole('warden')">
+                <svg class="svg-icon icon-sm" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                WARDEN LOGIN
+            </button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+            <input type="hidden" id="roleInput" value="student">
+
+            <div class="form-group">
+                <label id="emailLabel">Student Email Address</label>
+                <input type="email" id="emailInput" class="form-control" placeholder="alex.j@hostel.edu" required>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="passwordInput" class="form-control" placeholder="••••••••" value="password123" required>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                <span>Sign In to Platform</span>
+                <svg class="svg-icon" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+        </form>
+
+        <!-- Quick Demo One-Click Login Accounts -->
+        <div class="demo-accounts-box">
+            <div class="demo-title">
+                <span>Quick Demo Credentials</span>
+                <span>Password: password123</span>
+            </div>
+            <div class="demo-grid">
+                <button type="button" class="demo-btn" onclick="quickLogin('alex.j@hostel.edu', 'password123', 'student')">
+                    <div>
+                        <strong>Alex Johnson</strong>
+                        <div style="font-size:0.72rem; color:#64748b;">Block A — Room A-101 (Boys Hostel)</div>
+                    </div>
+                    <span class="demo-badge">Student 1</span>
+                </button>
+
+                <button type="button" class="demo-btn" onclick="quickLogin('arjun.v@hostel.edu', 'password123', 'student')">
+                    <div>
+                        <strong>Arjun Verma</strong>
+                        <div style="font-size:0.72rem; color:#64748b;">Block B — Room B-101 (Boys Hostel)</div>
+                    </div>
+                    <span class="demo-badge">Student 2</span>
+                </button>
+
+                <button type="button" class="demo-btn" onclick="quickLogin('priya.p@hostel.edu', 'password123', 'student')">
+                    <div>
+                        <strong>Priya Patel</strong>
+                        <div style="font-size:0.72rem; color:#64748b;">Block C — Room C-101 (Girls Hostel)</div>
+                    </div>
+                    <span class="demo-badge">Student 3</span>
+                </button>
+
+                <button type="button" class="demo-btn" onclick="quickLogin('warden@hostel.edu', 'password123', 'warden')" style="background:#eff6ff; border-color:#bfdbfe; color:#1d4ed8;">
+                    <div>
+                        <strong>Dr. Robert Vance</strong>
+                        <div style="font-size:0.72rem; color:#2563eb;">Warden Administrator — Block A & B</div>
+                    </div>
+                    <span class="demo-badge" style="background:#dbeafe; color:#1e40af;">Warden</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const roleParam = params.get('role');
+            if (roleParam === 'warden') {
+                selectRole('warden');
+            } else if (roleParam === 'student') {
+                selectRole('student');
+            }
+        });
+
+        function selectRole(role) {
+            document.getElementById('roleInput').value = role;
+            const tabStudent = document.getElementById('tabStudent');
+            const tabWarden = document.getElementById('tabWarden');
+            const emailLabel = document.getElementById('emailLabel');
+            const emailInput = document.getElementById('emailInput');
+
+            if (role === 'warden') {
+                tabStudent.classList.remove('active');
+                tabWarden.classList.add('active');
+                emailLabel.textContent = 'Warden Email Address';
+                emailInput.placeholder = 'warden@hostel.edu';
+            } else {
+                tabStudent.classList.add('active');
+                tabWarden.classList.remove('active');
+                emailLabel.textContent = 'Student Email Address';
+                emailInput.placeholder = 'alex.j@hostel.edu';
+            }
+        }
+
+        async function handleLoginSubmit(e) {
+            e.preventDefault();
+            const email = document.getElementById('emailInput').value.trim();
+            const password = document.getElementById('passwordInput').value.trim();
+            const role = document.getElementById('roleInput').value;
+
+            await performLogin(email, password, role);
+        }
+
+        async function quickLogin(email, password, role) {
+            document.getElementById('emailInput').value = email;
+            document.getElementById('passwordInput').value = password;
+            selectRole(role);
+            await performLogin(email, password, role);
+        }
+
+        async function performLogin(email, password, role) {
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, role })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`Authenticated as ${data.user.name}`, 'info');
+                    setTimeout(() => {
+                        window.location.href = '/app';
+                    }, 500);
+                } else {
+                    showToast(data.message || 'Login failed', 'error');
+                }
+            } catch (err) {
+                showToast('Network error logging in', 'error');
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast ${type === 'error' ? 'toast-error' : ''}`;
+            toast.innerHTML = `
+                <svg class="svg-icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.2s ease';
+                setTimeout(() => toast.remove(), 200);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

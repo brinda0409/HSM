@@ -1,0 +1,39 @@
+# Environment Secrets
+.env
+.env.local
+.env.*.local
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+
+# Database Files
+database/*.db
+*.sqlite
+*.sqlite3
+*.db
+
+# Application Logs
+logs/
+*.log
+
+# IDE & OS Files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Temporary & Agent Files
+.gemini/
+.agents/
+HSM/

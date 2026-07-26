@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS students (
     roll_no TEXT NOT NULL UNIQUE,
     room_id INTEGER,
     contact TEXT NOT NULL,
-    email TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL DEFAULT 'password123',
     FOREIGN KEY (room_id) REFERENCES rooms(room_id) ON DELETE SET NULL
 );
 
@@ -30,6 +31,8 @@ CREATE TABLE IF NOT EXISTS wardens (
     warden_id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     contact TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE DEFAULT 'warden@hostel.edu',
+    password TEXT NOT NULL DEFAULT 'password123',
     block_assigned TEXT NOT NULL,
     office_hours TEXT NOT NULL
 );

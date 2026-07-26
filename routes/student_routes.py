@@ -12,13 +12,16 @@ def list_students():
                         ORDER BY s.student_id""")
     return jsonify({"success": True, "data": rows, "count": len(rows)}), 200
 
+from datetime import datetime, timedelta
+
 @student_bp.route("/api/dashboard/stats", methods=["GET"])
 def get_dashboard_stats():
     """GET /api/dashboard/stats - Fetch summary metrics for Admin Dashboard."""
     open_complaints = query_one("SELECT COUNT(*) as cnt FROM complaints WHERE status IN ('Open', 'In Progress')")["cnt"]
     pending_leaves = query_one("SELECT COUNT(*) as cnt FROM leaves WHERE status = 'Pending'")["cnt"]
-    today_str = query_one("SELECT DATE('now') as d")["d"]
-    today_visitors = query_one("SELECT COUNT(*) as cnt FROM visitors WHERE visit_date >= DATE('now', '-1 day')")["cnt"]
+    
+    yesterday_str = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+    today_visitors = query_one("SELECT COUNT(*) as cnt FROM visitors WHERE visit_date >= ?", (yesterday_str,))["cnt"]
 
     rooms_capacity = query_one("SELECT SUM(capacity) as cap, SUM(occupied_count) as occ FROM rooms")
     total_cap = rooms_capacity["cap"] or 1

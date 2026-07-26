@@ -9,6 +9,7 @@ from services.db_service import init_db
 from utils.logger import logger
 from utils.error_handlers import register_error_handlers
 
+from routes.auth_routes import auth_bp
 from routes.chat_routes import chat_bp
 from routes.complaint_routes import complaint_bp
 from routes.visitor_routes import visitor_bp
@@ -20,6 +21,7 @@ from routes.student_routes import student_bp
 def create_app():
     """Factory function to configure and initialize Flask Application."""
     app = Flask(__name__, template_folder="templates", static_folder="static")
+    app.secret_key = os.getenv("SECRET_KEY", "shms_secure_session_key_2026")
 
     # Initialize Database Schema & Seed Data if not present
     init_db()
@@ -28,6 +30,7 @@ def create_app():
     register_error_handlers(app)
 
     # Register Blueprints
+    app.register_blueprint(auth_bp)
     app.register_blueprint(chat_bp)
     app.register_blueprint(complaint_bp)
     app.register_blueprint(visitor_bp)
@@ -37,14 +40,21 @@ def create_app():
     app.register_blueprint(student_bp)
 
     @app.route("/")
-    def index():
-        """Student Chat Interface Page"""
-        return render_template("index.html")
+    def landing():
+        """SaaS Product Landing Page"""
+        return render_template("landing.html")
 
+    @app.route("/login")
+    def login_page():
+        """SaaS Authentication & Dual-Role Login Page"""
+        return render_template("login.html")
+
+    @app.route("/app")
+    @app.route("/portal")
     @app.route("/dashboard")
-    def dashboard():
-        """Admin / Warden Management Dashboard Page"""
-        return render_template("dashboard.html")
+    def app_portal():
+        """Unified Platform SPA Engine for Authenticated Students & Wardens"""
+        return render_template("index.html")
 
     return app
 

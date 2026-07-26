@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HSM SaaS Platform - Sovereign Student Vault & AI Assistant</title>
+    <title>Smart Hostel Management System - Enterprise Platform</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
 </head>
 <body>
 
@@ -12,62 +13,76 @@
         <!-- Sidebar Navigation -->
         <aside class="hsm-sidebar">
             <div class="sidebar-brand">
-                <div class="brand-title">
-                    <span style="color: var(--mint-dark);">🛡️</span> HSM Cloud
-                </div>
-                <div class="brand-sub">SaaS Platform Edition</div>
+                <a href="/" class="brand-title" style="text-decoration:none;">
+                    <span style="color: var(--mint-dark); display: inline-flex;">
+                        <svg class="svg-icon icon-lg" viewBox="0 0 24 24"><path d="M3 21h18M3 7v14M21 7v14M6 21V10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v11M9 13h2v3H9zM13 13h2v3h-2zM9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                    </span>
+                    <span style="color:var(--text-primary);">SmartHostel</span>
+                </a>
+                <div class="brand-sub">Unified Platform</div>
             </div>
 
-            <!-- SaaS Subscription Plan Badge -->
-            <div class="saas-plan-badge" onclick="openPricingModal()" style="cursor:pointer;" title="Click to view SaaS plans">
-                <div>
-                    <div>ORGANIZATION</div>
-                    <span class="tier">PRO ENTERPRISE TIER</span>
+            <!-- Profile Summary Box -->
+            <div class="vault-status-box" id="sidebarProfileBox" style="background: var(--mint-light-bg); border-color: #a7f3d0;">
+                <div class="vault-icon" id="sidebarProfileIcon" style="color: var(--mint-dark); display: inline-flex;">
+                    <svg class="svg-icon icon-lg" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
                 </div>
-                <div style="font-size:0.7rem; background:#27272a; padding:0.2rem 0.5rem; border-radius:6px; color:var(--mint-accent);">ACTIVE</div>
-            </div>
-
-            <div class="vault-status-box">
-                <div class="vault-icon">🔑</div>
                 <div class="vault-info">
-                    <h4>HSM VAULT</h4>
-                    <p>Identity Verified</p>
+                    <h4 id="sidebarProfileTitle" style="color: var(--mint-pill-text);">STUDENT PORTAL</h4>
+                    <p id="sidebarProfileSub" style="color: var(--mint-dark); font-weight: 600;">Active Resident</p>
                 </div>
             </div>
 
             <nav class="sidebar-nav">
-                <a href="/" class="nav-link active">
-                    <span>🟢</span> VAULT
-                </a>
-                <a href="#complaints" class="nav-link" onclick="filterView('complaints')">
-                    <span>🔧</span> COMPLAINTS
-                </a>
-                <a href="#leaves" class="nav-link" onclick="filterView('leaves')">
-                    <span>📝</span> LEAVES
-                </a>
-                <a href="#visitors" class="nav-link" onclick="filterView('visitors')">
-                    <span>👨‍👩‍👦</span> VISITORS
-                </a>
-                <a href="#rooms" class="nav-link" onclick="filterView('rooms')">
-                    <span>🏠</span> ROOMS
-                </a>
-                <a href="javascript:void(0)" class="nav-link" onclick="openPricingModal()">
-                    <span>💎</span> PRICING & PLANS
-                </a>
-                <a href="#ai-console" class="nav-link" onclick="focusAiConsole()">
-                    <span>⚡</span> AI CONSOLE
-                </a>
+                <div id="sidebarStudentNavGroup">
+                    <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); letter-spacing:0.06em; margin:0.5rem 0 0.2rem 0.4rem; text-transform:uppercase;">Student Views</div>
+                    <a href="javascript:void(0)" class="nav-link active" id="nav-student-dashboard" onclick="switchMainView('student', 'dashboard', this)" data-tooltip="Student Dashboard & Chat Assistant">
+                        <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                        <span>Student Dashboard</span>
+                    </a>
+                    <a href="javascript:void(0)" class="nav-link" id="nav-student-complaints" onclick="switchMainView('student', 'complaints', this)" data-tooltip="My Complaints">
+                        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                        <span>My Complaints</span>
+                    </a>
+                    <a href="javascript:void(0)" class="nav-link" id="nav-student-chat" onclick="switchMainView('student', 'chat', this)" data-tooltip="AI Assistant Console">
+                        <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4M8 15h.01M16 15h.01"/></svg>
+                        <span>AI Assistant</span>
+                    </a>
+                </div>
+
+                <div id="sidebarWardenNavGroup">
+                    <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); letter-spacing:0.06em; margin:1rem 0 0.2rem 0.4rem; text-transform:uppercase;">Warden Views</div>
+                    <a href="javascript:void(0)" class="nav-link" id="nav-warden-complaints" onclick="switchMainView('warden', 'complaints', this)" data-tooltip="Warden Overview & Analytics">
+                        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <span>Warden Dashboard</span>
+                    </a>
+                    <a href="javascript:void(0)" class="nav-link" id="nav-warden-leaves" onclick="switchMainView('warden', 'leaves', this)" data-tooltip="Approve/Reject Student Leaves">
+                        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        <span>Leave Approvals</span>
+                    </a>
+                    <a href="javascript:void(0)" class="nav-link" id="nav-warden-visitors" onclick="switchMainView('warden', 'visitors', this)" data-tooltip="Visitor Gate Passes & Security">
+                        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <span>Visitor Security Logs</span>
+                    </a>
+                    <a href="javascript:void(0)" class="nav-link" id="nav-warden-rooms" onclick="switchMainView('warden', 'rooms', this)" data-tooltip="Room Capacity & Allocation">
+                        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/></svg>
+                        <span>Room Allocations</span>
+                    </a>
+                    <a href="javascript:void(0)" class="nav-link" id="nav-warden-logs" onclick="switchMainView('warden', 'logs', this)" data-tooltip="AI Agent Audit Logs">
+                        <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <span>AI Audit Logs</span>
+                    </a>
+                </div>
             </nav>
 
             <div class="sidebar-footer">
-                <button class="btn-dark-action" onclick="resetDemoData()">
-                    <span>+</span> RESET & RE-SEED
+                <button class="btn-dark-action" onclick="resetDemoData()" data-tooltip="Reload Database Records">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                    <span>Reset Database</span>
                 </button>
-                <a href="/dashboard" class="footer-link">
-                    <span>⚙️</span> WARDEN DASHBOARD
-                </a>
-                <a href="javascript:void(0)" class="footer-link" onclick="openPricingModal()">
-                    <span>🚀</span> UPGRADE SAAS TIER
+                <a href="/login" class="footer-link" data-tooltip="Switch User / Sign In to Platform" style="margin-top:0.4rem; text-decoration:none; display:flex; align-items:center; gap:0.4rem;">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                    <span>Sign In / Switch Role</span>
                 </a>
             </div>
         </aside>
@@ -78,34 +93,30 @@
             <!-- Top Navigation Bar -->
             <header class="hsm-topbar">
                 <div class="search-pill">
-                    <span>🔍</span>
-                    <input type="text" id="globalSearch" placeholder="Search secure HSM records...">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" id="globalSearch" placeholder="Search complaints, leave records, visitors, FAQs...">
                 </div>
 
-                <!-- Multi-Tenant Campus Selector -->
-                <div class="tenant-select-pill">
-                    <span>🏢</span>
+                <!-- Hostel Block Selector -->
+                <div class="tenant-select-pill" data-tooltip="Select Campus Hostel Block">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M18 20V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v14M2 20h20M10 12h4M10 16h4"/></svg>
                     <select id="tenantSelect">
-                        <option value="main" selected>Main Campus Hostel (Block A & B)</option>
-                        <option value="north">North Campus Residency (Block C)</option>
-                        <option value="west">West Campus Residency (Block D)</option>
+                        <option value="main" selected>Block A (Boys Hostel)</option>
+                        <option value="north">Block B (Boys Hostel)</option>
+                        <option value="west">Block C (Girls Hostel)</option>
                     </select>
                 </div>
 
-                <!-- Telemetry Quota Bar -->
-                <div class="telemetry-bar">
-                    <span>⚡ AI Quota: 842 / 10,000 reqs/mo</span>
-                </div>
-
+                <!-- Mode Switcher Pill -->
                 <div class="topbar-actions">
-                    <div class="role-switcher-pill">
-                        <button class="role-option active">STUDENT</button>
-                        <a href="/dashboard" class="role-option" style="text-decoration:none; display:inline-block;">WARDEN</a>
-                        <button class="role-option">AUDITOR</button>
+                    <div class="role-switcher-pill" id="topbarRoleSwitcher">
+                        <button class="role-option active" id="btnModeStudent" onclick="switchMainView('student')">STUDENT VIEW</button>
+                        <button class="role-option" id="btnModeWarden" onclick="switchMainView('warden')">WARDEN VIEW</button>
                     </div>
 
-                    <div class="student-selector-wrapper" style="margin: 0 0.5rem;">
-                        <select id="studentSelect" style="background:#f1f5f9; border:1px solid #cbd5e1; padding:0.3rem 0.6rem; border-radius:8px; font-size:0.78rem; font-weight:700; outline:none; cursor:pointer;">
+                    <!-- Student Switcher (Visible in Student Mode) -->
+                    <div class="student-selector-wrapper" id="studentSelectWrap" style="margin: 0 0.5rem;" data-tooltip="Switch Active Student Resident Profile">
+                        <select id="studentSelect" style="background:#f1f5f9; border:1px solid #cbd5e1; padding:0.35rem 0.7rem; border-radius:8px; font-size:0.8rem; font-weight:700; outline:none; cursor:pointer; color: #0f172a;">
                             <option value="1" selected>Alex Johnson (Room A-101)</option>
                             <option value="2">Rahul Sharma (Room A-101)</option>
                             <option value="3">Priya Patel (Room A-102)</option>
@@ -114,198 +125,401 @@
                         </select>
                     </div>
 
-                    <button class="icon-btn" onclick="location.reload()" title="Refresh">🔄</button>
-                    <button class="icon-btn" title="Notifications">🔔</button>
+                    <button class="icon-btn" id="refreshBtn" data-tooltip="Refresh System Data">
+                        <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                    </button>
 
-                    <div class="badge-verified">
-                        <span>✓</span> VERIFIED
+                    <button class="icon-btn" data-tooltip="Notifications">
+                        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    </button>
+
+                    <div class="badge-verified" id="topAuthBadge" data-tooltip="Identity Authenticated">
+                        <svg class="svg-icon icon-sm" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span id="topAuthText">STUDENT AUTHENTICATED</span>
                     </div>
 
                     <div class="user-avatar-circle" id="userAvatar">A</div>
                 </div>
             </header>
 
-            <!-- Dashboard Body -->
+            <!-- Main Canvas Body -->
             <div class="hsm-body">
                 
-                <!-- Title & Security Badges -->
-                <div class="dashboard-title-row">
-                    <div class="title-group">
-                        <h1 id="vaultTitle">HSM Student Vault</h1>
-                        <p id="vaultSubtitle">Welcome back, <strong id="studentName">Alex Johnson</strong>. Your sovereign hostel data is end-to-end encrypted across verified system nodes.</p>
+                <!-- ==================== VIEW 1: STUDENT PORTAL ==================== -->
+                <div id="viewStudent" class="view-section">
+                    
+                    <!-- Title & Status Row -->
+                    <div class="dashboard-title-row">
+                        <div class="title-group">
+                            <h1>Student Hostel Portal</h1>
+                            <p>Welcome back, <strong id="studentName">Alex Johnson</strong>. Manage complaints, apply for leaves, register visitor passes, and talk to AI.</p>
+                        </div>
+
+                        <div class="security-tags">
+                            <span class="sec-tag" style="background:#ecfdf5; border-color:#a7f3d0; color:#059669; font-weight:800;">
+                                <svg class="svg-icon icon-sm" viewBox="0 0 24 24"><path d="M3 21h18M3 7v14M21 7v14M6 21V10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v11"/></svg>
+                                BLOCK A
+                            </span>
+                            <span class="sec-tag" style="background:#eff6ff; border-color:#bfdbfe; color:#1d4ed8; font-weight:800;">
+                                <svg class="svg-icon icon-sm" viewBox="0 0 24 24"><path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/></svg>
+                                ROOM A-101
+                            </span>
+                            <span class="sec-tag" style="background:#f0fdf4; border-color:#bbf7d0; color:#15803d; font-weight:800;">
+                                <svg class="svg-icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                                RESIDENT
+                            </span>
+                        </div>
                     </div>
 
-                    <div class="security-tags">
-                        <span class="sec-tag" style="background:#ecfdf5; border-color:#a7f3d0; color:#059669; font-weight:800;">🌐 SAAS CLOUD TENANT: ACTIVE</span>
-                        <span class="sec-tag">🔒 END-TO-END ENCRYPTED</span>
-                        <span class="sec-tag">🛡️ SIGNATURE-VERIFIED</span>
+                    <!-- Top Hero Grid (Stats + Student ID Card) -->
+                    <div class="top-hero-grid">
+                        
+                        <!-- Left Hero Stats Card -->
+                        <div class="hero-stats-card">
+                            <div class="stats-inline-row">
+                                <div class="stat-item">
+                                    <h2 id="complaintsCnt">0</h2>
+                                    <p>Open Complaints</p>
+                                </div>
+                                <div class="stat-item">
+                                    <h2 id="leavesCnt">0</h2>
+                                    <p>Active Leaves</p>
+                                </div>
+                                <div class="stat-item">
+                                    <h2 id="visitorsCnt">0</h2>
+                                    <p>Registered Visitors</p>
+                                </div>
+                            </div>
+
+                            <div class="sig-row">
+                                <div>
+                                    <span>Hostel Desk: </span>
+                                    <span class="sig-code" style="background:#f1f5f9; color:#0f172a; padding:0.2rem 0.5rem; border-radius:4px;">Main Admin Office (Mon-Sat 9AM-5PM)</span>
+                                </div>
+                                <button class="btn-text-action" onclick="loadStudentPortalData(true)" data-tooltip="Re-fetch student metrics">REFRESH</button>
+                            </div>
+                        </div>
+
+                        <!-- Right Hostel Student ID Card -->
+                        <div class="hero-key-card" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+                            <div class="key-card-header">
+                                <span style="display:inline-flex; align-items:center; gap:0.3rem;">
+                                    <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><line x1="15" y1="8" x2="19" y2="8"/><line x1="15" y1="12" x2="19" y2="12"/><line x1="7" y1="16" x2="17" y2="16"/></svg>
+                                    STUDENT HOSTEL ID
+                                </span>
+                                <span>ROLL: CS2024-001</span>
+                            </div>
+
+                            <div class="key-card-body">
+                                <h3 id="cardStudentName">Alex Johnson</h3>
+                                <p style="color:#94a3b8; font-size:0.85rem; margin-top:0.2rem;">Computer Science — Batch 2024</p>
+                            </div>
+
+                            <div class="key-card-footer">
+                                <span>ROOM ASSIGNMENT</span>
+                                <span class="badge-mint-tag">BLOCK A — ROOM A-101</span>
+                            </div>
+                        </div>
                     </div>
+
+                    <!-- 3 Column Content Grid -->
+                    <div class="hsm-grid-3">
+                        
+                        <!-- Card 1: My Complaints -->
+                        <div class="hsm-card">
+                            <div class="card-head">
+                                <h3 style="display:inline-flex; align-items:center; gap:0.4rem;">
+                                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                                    Complaints & Maintenance
+                                </h3>
+                            </div>
+                            <div class="item-list" id="complaintItemsList">
+                                <div class="skeleton-row skeleton"></div>
+                                <div class="skeleton-row skeleton"></div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Hostel Guidelines & Mess Timings -->
+                        <div class="hsm-card">
+                            <div class="card-head">
+                                <h3 style="display:inline-flex; align-items:center; gap:0.4rem;">
+                                    <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                                    Hostel Guidelines & Mess
+                                </h3>
+                            </div>
+                            <div class="item-list" id="hostelSpecsList">
+                                <div class="item-row">
+                                    <div class="item-main">
+                                        <h5>Mess Timings (Today)</h5>
+                                        <p>Breakfast: 07:30-09:30 AM | Dinner: 07:30-09:30 PM</p>
+                                    </div>
+                                    <span class="badge-mint-tag">OPEN</span>
+                                </div>
+                                <div class="item-row">
+                                    <div class="item-main">
+                                        <h5>Night Curfew Rule</h5>
+                                        <p>10:00 PM Daily entry limit for residents</p>
+                                    </div>
+                                    <span class="badge-mint-tag" style="background:#fef3c7; color:#b45309;">10:00 PM</span>
+                                </div>
+                                <div class="item-row">
+                                    <div class="item-main">
+                                        <h5>Room Occupancy (A-101)</h5>
+                                        <p>2 Beds (Alex Johnson & Rahul Sharma)</p>
+                                    </div>
+                                    <span class="badge-mint-tag">OCCUPIED</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 3: AI Assistant Console -->
+                        <div class="ai-partner-card">
+                            <div class="card-head" style="border-bottom: 1px solid #27272a; margin-bottom: 0; padding-bottom: 0.5rem;">
+                                <h3 style="color:#ffffff; display:inline-flex; align-items:center; gap:0.4rem;">
+                                    <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4M8 15h.01M16 15h.01"/></svg>
+                                    Hostel AI Assistant
+                                </h3>
+                            </div>
+
+                            <!-- Quick Prompt Chips -->
+                            <div class="quick-chips-row">
+                                <button class="chip-mini" onclick="sendQuickPrompt('My room light is not working.')" data-tooltip="Quick file complaint">Light Broken</button>
+                                <button class="chip-mini" onclick="sendQuickPrompt('Apply leave for this weekend.')" data-tooltip="Quick apply leave">Weekend Leave</button>
+                                <button class="chip-mini" onclick="sendQuickPrompt('My parents are visiting tomorrow.')" data-tooltip="Quick visitor pass">Visitor Pass</button>
+                                <button class="chip-mini" onclick="sendQuickPrompt('What are today\'s mess timings?')" data-tooltip="Ask mess timings">Mess Timings</button>
+                            </div>
+
+                            <!-- Chat Output Box -->
+                            <div class="ai-chat-box" id="aiChatBox">
+                                <div class="chat-msg agent">
+                                    <div class="chat-meta">Hostel AI System Ready</div>
+                                    Hello! I am your <strong>Hostel AI Assistant</strong>. How can I help you today with complaints, leaves, visitors, or hostel timings?
+                                </div>
+                            </div>
+
+                            <!-- Chat Input Bar -->
+                            <div class="ai-input-bar">
+                                <input type="text" id="aiInput" placeholder="Ask Hostel AI... (e.g. 'My room AC is broken')">
+                                <button id="aiSendBtn" data-tooltip="Send message to AI assistant">
+                                    <svg class="svg-icon" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Announcement & Activity Row -->
+                    <div class="hsm-grid-3" style="grid-template-columns: 2fr 1fr;">
+                        <div class="alert-banner-card" style="background:#eff6ff; border-color:#bfdbfe;">
+                            <div class="alert-info-box">
+                                <div class="alert-icon-wrap" style="background:#dbeafe; color:#1d4ed8;">
+                                    <svg class="svg-icon icon-lg" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                                </div>
+                                <div class="alert-details">
+                                    <h4 style="color:#1e40af;">HOSTEL ANNOUNCEMENT: Scheduled Maintenance <span style="font-size:0.75rem; color:#2563eb; font-weight:800;">NOTICE #A-42</span></h4>
+                                    <p style="color:#1e3a8a;">Water supply maintenance is scheduled for Block A on Saturday between 10:00 AM and 01:00 PM.</p>
+                                </div>
+                            </div>
+                            <div class="alert-actions">
+                                <button class="btn-secondary-outline" style="border-color:#93c5fd; color:#1d4ed8;" onclick="this.parentElement.parentElement.style.display='none'" data-tooltip="Dismiss notice">ACKNOWLEDGE</button>
+                            </div>
+                        </div>
+
+                        <div class="hsm-card">
+                            <div class="card-head">
+                                <h3 style="display:inline-flex; align-items:center; gap:0.4rem;">
+                                    <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="12 8 12 12 14 14"/><circle cx="12" cy="12" r="10"/></svg>
+                                    Recent Activity
+                                </h3>
+                                <span style="font-size:0.7rem; color:var(--mint-dark); font-weight:800;">Real-time</span>
+                            </div>
+                            <div class="activity-feed" id="activityFeed">
+                                <div class="act-item">
+                                    <div class="act-check">
+                                        <svg class="svg-icon icon-sm" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </div>
+                                    <div class="act-content">
+                                        <p>Logged in as student resident</p>
+                                        <span class="act-time">Just now</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
-                <!-- Top Hero Grid (Stats + Dark Profile Card) -->
-                <div class="top-hero-grid">
+                <!-- ==================== VIEW 2: WARDEN ADMIN PORTAL ==================== -->
+                <div id="viewWarden" class="view-section" style="display: none;">
                     
-                    <!-- Left Hero Stats Card -->
-                    <div class="hero-stats-card">
-                        <div class="stats-inline-row">
-                            <div class="stat-item">
-                                <h2 id="complaintsCnt">3</h2>
-                                <p>Secure Complaints</p>
-                            </div>
-                            <div class="stat-item">
-                                <h2 id="leavesCnt">02</h2>
-                                <p>Active Leaves</p>
-                            </div>
-                            <div class="stat-item">
-                                <h2 id="integrityCnt">99.9%</h2>
-                                <p>Data Integrity</p>
-                            </div>
+                    <!-- Title Row -->
+                    <div class="dashboard-title-row">
+                        <div class="title-group">
+                            <h1>Warden & Hostel Administration</h1>
+                            <p>Real-time oversight of hostel complaints, leave applications, visitor security, and room capacity.</p>
                         </div>
 
-                        <div class="sig-row">
-                            <div>
-                                <span>Agent signature: </span>
-                                <span class="sig-code">0x_hsm_8f23901a</span>
-                            </div>
-                            <button class="btn-text-action" onclick="location.reload()">RE-VERIFY ALL</button>
+                        <div class="security-tags">
+                            <span class="sec-tag" style="background:#ecfdf5; border-color:#a7f3d0; color:#059669; font-weight:800;">
+                                <svg class="svg-icon icon-sm" viewBox="0 0 24 24"><path d="M3 21h18M3 7v14M21 7v14M6 21V10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v11"/></svg>
+                                MAIN CAMPUS HOSTEL
+                            </span>
+                            <span class="sec-tag" style="background:#eff6ff; border-color:#bfdbfe; color:#1d4ed8; font-weight:800;">
+                                <svg class="svg-icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                LIVE AUDIT ACTIVE
+                            </span>
                         </div>
                     </div>
 
-                    <!-- Right Dark Hero Key Card -->
-                    <div class="hero-key-card">
-                        <div class="key-card-header">
-                            <span>🔑 KEY VAULT</span>
-                            <span>HSM-ID: 881-22-LX</span>
+                    <!-- KPI Metric Cards Grid -->
+                    <div class="top-hero-grid" style="grid-template-columns: repeat(4, 1fr);">
+                        <div class="hero-stats-card" style="padding: 1.2rem;">
+                            <div style="font-size:0.8rem; font-weight:700; color:var(--text-secondary);">OPEN COMPLAINTS</div>
+                            <h2 id="statComplaints" style="font-size:2rem; font-weight:800; color:#0f172a; margin-top:0.3rem;">0</h2>
+                            <span style="font-size:0.7rem; color:#ef4444; font-weight:700; margin-top:0.3rem;">Action Required</span>
                         </div>
 
-                        <div class="key-card-body">
-                            <h3 id="cardStudentName">Alex Johnson</h3>
-                            <p>Sovereign Identity Key Active</p>
+                        <div class="hero-stats-card" style="padding: 1.2rem;">
+                            <div style="font-size:0.8rem; font-weight:700; color:var(--text-secondary);">PENDING LEAVES</div>
+                            <h2 id="statLeaves" style="font-size:2rem; font-weight:800; color:#0f172a; margin-top:0.3rem;">0</h2>
+                            <span style="font-size:0.7rem; color:#d97706; font-weight:700; margin-top:0.3rem;">Awaiting Approval</span>
                         </div>
 
-                        <div class="key-card-footer">
-                            <span>VAULT ENCRYPTION</span>
-                            <span class="badge-mint-tag">AES-256</span>
+                        <div class="hero-stats-card" style="padding: 1.2rem;">
+                            <div style="font-size:0.8rem; font-weight:700; color:var(--text-secondary);">TODAY'S VISITORS</div>
+                            <h2 id="statVisitors" style="font-size:2rem; font-weight:800; color:#0f172a; margin-top:0.3rem;">0</h2>
+                            <span style="font-size:0.7rem; color:var(--mint-dark); font-weight:700; margin-top:0.3rem;">Registered Gate Passes</span>
                         </div>
-                    </div>
-                </div>
 
-                <!-- 3 Column Content Grid -->
-                <div class="hsm-grid-3">
-                    
-                    <!-- Card 1: Complaints & Maintenance -->
-                    <div class="hsm-card">
-                        <div class="card-head">
-                            <h3>🔗 Complaints & Maintenance</h3>
-                            <span class="item-status-icon">⚠️</span>
-                        </div>
-                        <div class="item-list" id="complaintItemsList">
-                            <!-- Populated dynamically -->
+                        <div class="hero-key-card" style="padding: 1.2rem; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+                            <div style="font-size:0.75rem; color:#a1a1aa; font-weight:700;">ROOM OCCUPANCY</div>
+                            <h2 id="statOccupancy" style="font-size:2rem; font-weight:800; color:var(--mint-accent); margin-top:0.3rem;">0%</h2>
+                            <span style="font-size:0.7rem; color:#a1a1aa;">Hostel Capacity</span>
                         </div>
                     </div>
 
-                    <!-- Card 2: Hostel Info & Mess Timings -->
-                    <div class="hsm-card">
-                        <div class="card-head">
-                            <h3>🧪 Hostel Specs & Mess</h3>
-                            <span class="item-status-icon">🍱</span>
-                        </div>
-                        <div class="item-list" id="hostelSpecsList">
-                            <div class="item-row">
-                                <div class="item-main">
-                                    <h5>Mess Timings (Today)</h5>
-                                    <p>Breakfast: 07:30 - 09:30 AM | Dinner: 07:30 - 09:30 PM</p>
-                                </div>
-                                <span class="badge-mint-tag">VERIFIED</span>
-                            </div>
-                            <div class="item-row">
-                                <div class="item-main">
-                                    <h5>Night Curfew Rule</h5>
-                                    <p>10:00 PM Daily entry limit</p>
-                                </div>
-                                <span class="badge-mint-tag">ACTIVE</span>
-                            </div>
-                            <div class="item-row">
-                                <div class="item-main">
-                                    <h5>Room Occupancy</h5>
-                                    <p>Room A-101: 2/2 Beds Occupied</p>
-                                </div>
-                                <span class="badge-mint-tag">FULL</span>
-                            </div>
+                    <!-- Section Tabs -->
+                    <div class="tabs-header">
+                        <button class="tab-btn active" data-tab="complaints" onclick="switchWardenTab('complaints')">Complaints Management</button>
+                        <button class="tab-btn" data-tab="leaves" onclick="switchWardenTab('leaves')">Leave Applications</button>
+                        <button class="tab-btn" data-tab="visitors" onclick="switchWardenTab('visitors')">Visitor Logs</button>
+                        <button class="tab-btn" data-tab="rooms" onclick="switchWardenTab('rooms')">Room Occupancy & Allocation</button>
+                        <button class="tab-btn" data-tab="logs" onclick="switchWardenTab('logs')">AI Agent Chat Audit Logs</button>
+                    </div>
+
+                    <!-- Tab 1: Complaints Table -->
+                    <div id="tab-complaints" class="tab-content">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Complaint ID</th>
+                                        <th>Student</th>
+                                        <th>Room</th>
+                                        <th>Category</th>
+                                        <th>Description</th>
+                                        <th>Priority</th>
+                                        <th>Status</th>
+                                        <th>Created At</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="complaintsTableBody">
+                                    <tr><td colspan="9"><div class="skeleton-row skeleton"></div></td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
-                    <!-- Card 3: HSM AI Console & Vault Activity -->
-                    <div class="ai-partner-card">
-                        <div class="card-head" style="border-bottom: 1px solid #27272a; margin-bottom: 0; padding-bottom: 0.5rem;">
-                            <h3 style="color:#ffffff;">⚡ HSM AI Agent Console</h3>
-                            <span class="badge-mint-tag">GEMINI AI ACTIVE</span>
-                        </div>
-
-                        <!-- Quick Prompt Chips -->
-                        <div class="quick-chips-row">
-                            <button class="chip-mini" onclick="sendQuickPrompt('My room light is not working.')">💡 Light Broken</button>
-                            <button class="chip-mini" onclick="sendQuickPrompt('Apply leave for this weekend.')">📝 Weekend Leave</button>
-                            <button class="chip-mini" onclick="sendQuickPrompt('My parents are visiting tomorrow.')">👨‍👩‍👦 Visitor Tomorrow</button>
-                            <button class="chip-mini" onclick="sendQuickPrompt('What are today\'s mess timings?')">🍱 Mess Timings</button>
-                        </div>
-
-                        <!-- Chat Output Box -->
-                        <div class="ai-chat-box" id="aiChatBox">
-                            <div class="chat-msg agent">
-                                <div class="chat-meta">⚡ Decision Agent System Ready</div>
-                                Hello! I am your <strong>HSM Agentic AI Assistant</strong>. How can I assist you with complaints, leaves, visitors, or room specs today?
-                            </div>
-                        </div>
-
-                        <!-- Chat Input -->
-                        <div class="ai-input-bar">
-                            <input type="text" id="aiInput" placeholder="Ask HSM AI... (e.g. 'My light is broken')">
-                            <button id="aiSendBtn">SEND</button>
+                    <!-- Tab 2: Leaves Table -->
+                    <div id="tab-leaves" class="tab-content" style="display: none;">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Leave ID</th>
+                                        <th>Student</th>
+                                        <th>Room</th>
+                                        <th>Leave Type</th>
+                                        <th>Start Date</th>
+                                        <th>End Date</th>
+                                        <th>Reason</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leavesTableBody">
+                                    <tr><td colspan="9"><div class="skeleton-row skeleton"></div></td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
-                </div>
-
-                <!-- Vault Activity Timeline & Alert Row -->
-                <div class="hsm-grid-3" style="grid-template-columns: 2fr 1fr;">
-                    
-                    <!-- Alert Banner -->
-                    <div class="alert-banner-card">
-                        <div class="alert-info-box">
-                            <div class="alert-icon-wrap">🚨</div>
-                            <div class="alert-details">
-                                <h4>CRITICAL ALERT: Maintenance Pattern Flagged <span style="font-size:0.75rem; color:#ef4444; font-weight:800; font-family:'JetBrains Mono';">ID: HSM-3391</span></h4>
-                                <p>Our AI-Based Anomaly Detection system has cross-referenced electrical complaints in Block A. Warden audit scheduled.</p>
-                            </div>
-                        </div>
-                        <div class="alert-actions">
-                            <button class="btn-danger-outline">DECLINE & REPORT</button>
-                            <button class="btn-secondary-outline">THIS WAS ME</button>
+                    <!-- Tab 3: Visitors Table -->
+                    <div id="tab-visitors" class="tab-content" style="display: none;">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Visitor Name</th>
+                                        <th>Contact</th>
+                                        <th>Host Student</th>
+                                        <th>Room</th>
+                                        <th>Visit Date</th>
+                                        <th>Visit Time</th>
+                                        <th>Purpose</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="visitorsTableBody">
+                                    <tr><td colspan="9"><div class="skeleton-row skeleton"></div></td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
-                    <!-- Real-time Vault Activity Feed -->
-                    <div class="hsm-card">
-                        <div class="card-head">
-                            <h3>👁️ Vault Activity Feed</h3>
-                            <span style="font-size:0.7rem; color:var(--mint-dark); font-weight:800;">● Real-time</span>
+                    <!-- Tab 4: Rooms Table -->
+                    <div id="tab-rooms" class="tab-content" style="display: none;">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Room No</th>
+                                        <th>Block</th>
+                                        <th>Floor</th>
+                                        <th>Capacity</th>
+                                        <th>Occupied</th>
+                                        <th>Status</th>
+                                        <th>Amenities</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="roomsTableBody">
+                                    <tr><td colspan="7"><div class="skeleton-row skeleton"></div></td></tr>
+                                </tbody>
+                            </table>
                         </div>
-                        <div class="activity-feed" id="activityFeed">
-                            <div class="act-item">
-                                <div class="act-check">✓</div>
-                                <div class="act-content">
-                                    <p>Accessed complaint registry for Student #1</p>
-                                    <span class="act-time">Just now</span>
-                                </div>
-                            </div>
-                            <div class="act-item">
-                                <div class="act-check">✓</div>
-                                <div class="act-content">
-                                    <p>Ran AI leave approval audit</p>
-                                    <span class="act-time">5 mins ago</span>
-                                </div>
-                            </div>
+                    </div>
+
+                    <!-- Tab 5: AI Agent Audit Logs Table -->
+                    <div id="tab-logs" class="tab-content" style="display: none;">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Log ID</th>
+                                        <th>Student ID</th>
+                                        <th>User Input Message</th>
+                                        <th>Detected Intent(s)</th>
+                                        <th>Agents Invoked</th>
+                                        <th>Final Synthesized Response</th>
+                                        <th>Timestamp</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="logsTableBody">
+                                    <tr><td colspan="7"><div class="skeleton-row skeleton"></div></td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
@@ -315,69 +529,10 @@
         </main>
     </div>
 
-    <!-- SaaS Pricing Modal -->
-    <div id="pricingModal" class="modal-overlay">
-        <div class="pricing-modal">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <h2 style="font-size:1.5rem; font-weight:800;">HSM SaaS Subscription Plans</h2>
-                    <p style="color:var(--text-secondary); font-size:0.9rem;">Choose the right tier for your university campus or hostel block</p>
-                </div>
-                <button onclick="closePricingModal()" style="background:transparent; border:none; font-size:1.5rem; cursor:pointer;">✕</button>
-            </div>
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
 
-            <div class="pricing-grid">
-                <div class="pricing-card">
-                    <div>
-                        <h3>Starter Student</h3>
-                        <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.2rem;">Single hostel resident portal</p>
-                        <div class="price">$0 <span style="font-size:0.8rem; font-weight:400;">/ Forever</span></div>
-                        <ul style="font-size:0.85rem; color:var(--text-secondary); padding-left:1rem; margin-top:1rem; display:flex; flex-direction:column; gap:0.4rem;">
-                            <li>Basic AI Complaint Filing</li>
-                            <li>Leave Application Status</li>
-                            <li>Hostel FAQ Lookup</li>
-                            <li>100 AI queries/mo</li>
-                        </ul>
-                    </div>
-                    <button class="btn-dark-action" style="margin-top:1.5rem;" onclick="closePricingModal()">CURRENT PLAN</button>
-                </div>
-
-                <div class="pricing-card featured">
-                    <div>
-                        <div style="font-size:0.7rem; background:var(--mint-accent); color:#0f172a; font-weight:800; padding:0.2rem 0.5rem; border-radius:6px; width:fit-content; margin-bottom:0.5rem;">RECOMMENDED</div>
-                        <h3>Warden Pro Tier</h3>
-                        <p style="font-size:0.8rem; color:#a1a1aa; margin-top:0.2rem;">Full multi-agent automation</p>
-                        <div class="price" style="color:var(--mint-accent);">$49 <span style="font-size:0.8rem; font-weight:400; color:#a1a1aa;">/ month</span></div>
-                        <ul style="font-size:0.85rem; color:#d4d4d8; padding-left:1rem; margin-top:1rem; display:flex; flex-direction:column; gap:0.4rem;">
-                            <li>Decision Agent + 5 Worker Agents</li>
-                            <li>Leave Approval Workflow</li>
-                            <li>Visitor Visiting-Hours Rules Engine</li>
-                            <li>Real-Time Warden Audit Logs</li>
-                            <li>10,000 AI queries/mo</li>
-                        </ul>
-                    </div>
-                    <button class="btn-dark-action" style="background:var(--mint-accent); color:#0f172a; font-weight:800; margin-top:1.5rem;" onclick="closePricingModal()">ACTIVE PLAN</button>
-                </div>
-
-                <div class="pricing-card">
-                    <div>
-                        <h3>Enterprise Campus</h3>
-                        <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.2rem;">Multi-hostel university setup</p>
-                        <div class="price">$199 <span style="font-size:0.8rem; font-weight:400;">/ month</span></div>
-                        <ul style="font-size:0.85rem; color:var(--text-secondary); padding-left:1rem; margin-top:1rem; display:flex; flex-direction:column; gap:0.4rem;">
-                            <li>Unlimited Hostel Blocks & Tenants</li>
-                            <li>Custom Gemini Prompt Instructions</li>
-                            <li>Dedicated Database Instance</li>
-                            <li>24/7 Priority SLA Support</li>
-                            <li>Unlimited AI queries</li>
-                        </ul>
-                    </div>
-                    <button class="btn-dark-action" style="margin-top:1.5rem;" onclick="closePricingModal()">UPGRADE TO ENTERPRISE</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="/static/js/chat.js"></script>
+    <!-- Unified Single Script -->
+    <script src="/static/js/app.js"></script>
 </body>
 </html>

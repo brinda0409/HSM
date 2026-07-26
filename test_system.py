@@ -14,7 +14,13 @@ class TestSHMSSystem(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up test environment and initialize database."""
-        init_db()
+        db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "database", "hostel.db")
+        if os.path.exists(db_path):
+            try:
+                os.remove(db_path)
+            except Exception:
+                pass
+        init_db(reset=True)
         cls.app = create_app()
         cls.client = cls.app.test_client()
 

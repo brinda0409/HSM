@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartHostel — Next-Gen AI Hostel Management Platform</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+        :root {
+            --landing-bg: #09090b;
+            --landing-card: #18181b;
+            --landing-border: #27272a;
+            --landing-text: #f4f4f5;
+            --landing-sub: #a1a1aa;
+            --mint-accent: #00f5d4;
+            --mint-dark: #059669;
+            --blue-accent: #3b82f6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--landing-bg) !important;
+            color: var(--landing-text) !important;
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif !important;
+            display: block !important;
+            width: 100% !important;
+            min-height: 100vh;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow-x: hidden;
+        }
+
+        /* SVG Icon Base Styling */
+        .svg-icon {
+            width: 1rem;
+            height: 1rem;
+            display: inline-block;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            vertical-align: middle;
+            flex-shrink: 0;
+        }
+
+        .svg-icon.icon-lg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .svg-icon.icon-sm {
+            width: 0.85rem;
+            height: 0.85rem;
+        }
+
+        /* Tooltip Styling for Landing Page */
+        [data-tooltip] {
+            position: relative;
+        }
+
+        [data-tooltip]::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%) scale(0.92);
+            background: #0f172a;
+            color: #ffffff;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.15s ease;
+            pointer-events: none;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+            z-index: 200;
+        }
+
+        [data-tooltip]:hover::before {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) scale(1);
+        }
+
+        /* Header Navigation */
+        .landing-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 4rem;
+            border-bottom: 1px solid var(--landing-border);
+            background: rgba(9, 9, 11, 0.8);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-link-item {
+            color: var(--landing-sub);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: color 0.2s ease;
+        }
+
+        .nav-link-item:hover {
+            color: #ffffff;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: #ffffff;
+            border: 1px solid var(--landing-border);
+            padding: 0.55rem 1.1rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-ghost:hover {
+            border-color: #52525b;
+            background: #18181b;
+        }
+
+        .btn-primary-mint {
+            background: var(--mint-accent);
+            color: #0f172a;
+            border: none;
+            padding: 0.6rem 1.25rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 20px rgba(0, 245, 212, 0.25);
+        }
+
+        .btn-primary-mint:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0 30px rgba(0, 245, 212, 0.4);
+        }
+
+        /* Hero Section */
+        .hero-section {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 6rem 2rem 4rem 2rem;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(0, 245, 212, 0.1);
+            border: 1px solid rgba(0, 245, 212, 0.3);
+            color: var(--mint-accent);
+            padding: 0.35rem 0.9rem;
+            border-radius: 9999px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.03em;
+            color: #ffffff;
+            margin-bottom: 1.25rem;
+        }
+
+        .hero-title span {
+            background: linear-gradient(135deg, var(--mint-accent) 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.15rem;
+            color: var(--landing-sub);
+            max-width: 720px;
+            margin: 0 auto 2.5rem auto;
+            line-height: 1.6;
+        }
+
+        .hero-cta-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-hero-lg {
+            padding: 0.85rem 1.85rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 800;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-student {
+            background: var(--mint-accent);
+            color: #0f172a;
+            box-shadow: 0 10px 30px rgba(0, 245, 212, 0.25);
+        }
+
+        .btn-student:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0, 245, 212, 0.4);
+        }
+
+        .btn-warden {
+            background: #3b82f6;
+            color: #ffffff;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.25);
+        }
+
+        .btn-warden:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-demo-outline {
+            background: transparent;
+            color: #ffffff;
+            border: 1px solid var(--landing-border);
+        }
+
+        .btn-demo-outline:hover {
+            background: #18181b;
+            border-color: #52525b;
+        }
+
+        /* Stats Grid */
+        .stats-banner {
+            max-width: 1000px;
+            margin: 3rem auto 5rem auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            background: var(--landing-card);
+            border: 1px solid var(--landing-border);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .stat-box h3 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 0.2rem;
+        }
+
+        .stat-box p {
+            font-size: 0.8rem;
+            color: var(--landing-sub);
+            font-weight: 600;
+        }
+
+        /* Section Title */
+        .section-header {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 3rem auto;
+        }
+
+        .section-header h2 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-header p {
+            font-size: 0.95rem;
+            color: var(--landing-sub);
+        }
+
+        /* Features Grid */
+        .features-grid {
+            max-width: 1100px;
+            margin: 0 auto 6rem auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            padding: 0 2rem;
+        }
+
+        .feature-card {
+            background: var(--landing-card);
+            border: 1px solid var(--landing-border);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.2s ease;
+        }
+
+        .feature-card:hover {
+            border-color: #3f3f46;
+            transform: translateY(-3px);
+        }
+
+        .feature-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(0, 245, 212, 0.1);
+            color: var(--mint-accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 0.6rem;
+        }
+
+        .feature-card p {
+            font-size: 0.88rem;
+            color: var(--landing-sub);
+            line-height: 1.55;
+        }
+
+        /* Dual Portal Showcase Section */
+        .portals-section {
+            max-width: 1100px;
+            margin: 0 auto 6rem auto;
+            padding: 0 2rem;
+        }
+
+        .portals-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+
+        .portal-card {
+            background: linear-gradient(135deg, #18181b 0%, #09090b 100%);
+            border: 1px solid var(--landing-border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .portal-badge {
+            font-size: 0.72rem;
+            font-weight: 800;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            width: fit-content;
+            margin-bottom: 1rem;
+        }
+
+        .portal-card h3 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 0.75rem;
+        }
+
+        .portal-card p {
+            font-size: 0.9rem;
+            color: var(--landing-sub);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .portal-features-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 2rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            font-size: 0.85rem;
+            color: #d4d4d8;
+        }
+
+        .portal-features-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        .landing-footer {
+            border-top: 1px solid var(--landing-border);
+            padding: 3rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #09090b;
+        }
+
+        .footer-brand {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .footer-text {
+            font-size: 0.8rem;
+            color: var(--landing-sub);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="landing-header">
+        <a href="/" class="brand-logo">
+            <span style="color: var(--mint-accent); display: inline-flex;">
+                <svg class="svg-icon icon-lg" viewBox="0 0 24 24"><path d="M3 21h18M3 7v14M21 7v14M6 21V10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v11M9 13h2v3H9zM13 13h2v3h-2zM9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            </span>
+            <span>SmartHostel</span>
+        </a>
+
+        <nav class="nav-links">
+            <a href="#features" class="nav-link-item">Features</a>
+            <a href="#portals" class="nav-link-item">Portals</a>
+            <a href="#ai-agents" class="nav-link-item">AI Agents</a>
+            <a href="#stats" class="nav-link-item">Platform Stats</a>
+        </nav>
+
+        <div class="header-actions">
+            <a href="/login?role=student" class="btn-ghost" data-tooltip="Sign in as Student Resident">Student Login</a>
+            <a href="/login?role=warden" class="btn-ghost" data-tooltip="Sign in as Warden Administrator">Warden Login</a>
+        </div>
+    </header>
+
+    <!-- Main Hero Section -->
+    <section class="hero-section">
+        <div class="hero-badge">
+            <svg class="svg-icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+            <span>NEXT-GEN AI HOSTEL SAAS PLATFORM</span>
+        </div>
+
+        <h1 class="hero-title">
+            Smart Automation for <span>University Hostels</span> & Campus Residences
+        </h1>
+
+        <p class="hero-subtitle">
+            Streamline student complaints, leave approvals, visitor security gate passes, and room allocations using 6 autonomous AI agents integrated with Supabase PostgreSQL cloud storage.
+        </p>
+
+        <div class="hero-cta-group">
+            <a href="/login?role=student" class="btn-hero-lg btn-student" data-tooltip="Access Student Portal">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                <span>Student Login</span>
+            </a>
+
+            <a href="/login?role=warden" class="btn-hero-lg btn-warden" data-tooltip="Access Warden Administration">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span>Warden Admin Login</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Platform Stats Banner -->
+    <section class="stats-banner" id="stats">
+        <div class="stat-box">
+            <h3>6</h3>
+            <p>Autonomous AI Agents</p>
+        </div>
+        <div class="stat-box">
+            <h3>99.9%</h3>
+            <p>System Uptime SLA</p>
+        </div>
+        <div class="stat-box">
+            <h3>10,000+</h3>
+            <p>Student Residents Managed</p>
+        </div>
+        <div class="stat-box">
+            <h3>Sub-sec</h3>
+            <p>AI Query Response Time</p>
+        </div>
+    </section>
+
+    <!-- Feature Highlights -->
+    <section class="section-header" id="features">
+        <h2>Enterprise Features</h2>
+        <p>Everything university administrators and hostel residents need for modern campus living.</p>
+    </section>
+
+    <!-- System Workflow Flowchart Section -->
+    <section class="section-header" id="ai-agents" style="margin-top: 5rem;">
+        <h2>System Architecture Workflow</h2>
+        <p>End-to-end request flow from Landing Page & Login to Decision Agent orchestration.</p>
+    </section>
+
+    <div style="max-width: 1100px; margin: 0 auto 5rem auto; padding: 0 2rem;">
+        <div style="background: var(--landing-card); border: 1px solid var(--landing-border); border-radius: 20px; padding: 2.5rem; text-align: center;">
+            <div style="display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem;">
+                <span class="badge-mint-tag" style="background: #18181b; border: 1px solid #3f3f46; color: #ffffff; padding: 0.5rem 1rem; font-size: 0.85rem;">1. Landing Page</span>
+                <span style="color: var(--mint-accent);">➔</span>
+                <span class="badge-mint-tag" style="background: #18181b; border: 1px solid #3f3f46; color: #ffffff; padding: 0.5rem 1rem; font-size: 0.85rem;">2. Login / Sign Up</span>
+                <span style="color: var(--mint-accent);">➔</span>
+                <span class="badge-mint-tag" style="background: rgba(0, 245, 212, 0.15); border: 1px solid rgba(0, 245, 212, 0.4); color: var(--mint-accent); padding: 0.5rem 1rem; font-size: 0.85rem;">3. Student Dashboard</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; text-align: left;">
+                <div style="background: #09090b; border: 1px solid #27272a; padding: 1.25rem; border-radius: 12px;">
+                    <h5 style="color: var(--mint-accent); margin-bottom: 0.3rem;">🤖 AI Chat Assistant</h5>
+                    <p style="font-size: 0.82rem; color: var(--landing-sub);">Natural language prompt input for complaints, leaves, visitors, & FAQs.</p>
+                </div>
+                <div style="background: #09090b; border: 1px solid #27272a; padding: 1.25rem; border-radius: 12px;">
+                    <h5 style="color: #3b82f6; margin-bottom: 0.3rem;">⚡ Quick Actions</h5>
+                    <p style="font-size: 0.82rem; color: var(--landing-sub);">1-click chips: Light Broken, Weekend Leave, Visitor Pass, Mess Timings.</p>
+                </div>
+                <div style="background: #09090b; border: 1px solid #27272a; padding: 1.25rem; border-radius: 12px;">
+                    <h5 style="color: #a855f7; margin-bottom: 0.3rem;">👤 Student Profile</h5>
+                    <p style="font-size: 0.82rem; color: var(--landing-sub);">Identity verification, Roll No, Room & Block Badge details.</p>
+                </div>
+            </div>
+
+            <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border: 1px solid #334155; padding: 1.5rem; border-radius: 14px; margin-bottom: 2rem;">
+                <h4 style="color: #ffffff; font-size: 1.1rem; margin-bottom: 0.5rem;">🧠 Decision Agent Intent Parser</h4>
+                <p style="font-size: 0.88rem; color: #94a3b8;">Parses student natural text request and delegates to the appropriate specialized worker agent:</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; margin-top: 1rem;">
+                    <div style="background: #18181b; padding: 0.6rem; border-radius: 8px; font-size: 0.78rem; font-weight: 700; color: #f87171;">Complaint Agent</div>
+                    <div style="background: #18181b; padding: 0.6rem; border-radius: 8px; font-size: 0.78rem; font-weight: 700; color: #fbbf24;">Visitor Agent</div>
+                    <div style="background: #18181b; padding: 0.6rem; border-radius: 8px; font-size: 0.78rem; font-weight: 700; color: #60a5fa;">Room Agent</div>
+                    <div style="background: #18181b; padding: 0.6rem; border-radius: 8px; font-size: 0.78rem; font-weight: 700; color: #34d399;">Hostel Info Agent</div>
+                    <div style="background: #18181b; padding: 0.6rem; border-radius: 8px; font-size: 0.78rem; font-weight: 700; color: #c084fc;">Leave Agent</div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-around; align-items: center; font-size: 0.85rem; color: var(--landing-sub);">
+                <span>🗄️ Supabase Cloud DB Lookup</span>
+                <span>➔</span>
+                <span>⚙️ Response Generation</span>
+                <span>➔</span>
+                <span>💬 Display Chat Response</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <svg class="svg-icon icon-lg" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4M8 15h.01M16 15h.01"/></svg>
+            </div>
+            <h3>Multi-Agent AI Engine</h3>
+            <p>Decision Agent delegates natural language requests to specialized worker agents for complaints, leaves, visitors, room transfers, and hostel FAQs.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
+                <svg class="svg-icon icon-lg" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            </div>
+            <h3>Smart Complaint Management</h3>
+            <p>Auto-categorizes issues (Electrical, Plumbing, Wi-Fi, Furniture) and assigns priority levels with live status tracking.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;">
+                <svg class="svg-icon icon-lg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <h3>Automated Leave Workflows</h3>
+            <p>Resolves relative dates ("this weekend", "tomorrow") and processes student out-passes with warden approval channels.</p>
+        </div>
+    </div>
+
+    <!-- Dual Portals Section -->
+    <section class="section-header" id="portals">
+        <h2>Dual Authentication Portals</h2>
+        <p>Dedicated role-based interfaces designed for students and warden administrators.</p>
+    </section>
+
+    <div class="portals-section">
+        <div class="portals-grid">
+            
+            <!-- Student Portal Card -->
+            <div class="portal-card">
+                <div>
+                    <div class="portal-badge" style="background: rgba(0, 245, 212, 0.1); color: var(--mint-accent); border: 1px solid rgba(0, 245, 212, 0.3);">STUDENT PORTAL</div>
+                    <h3>Student Resident Experience</h3>
+                    <p>Interactive student interface featuring room badge identity, active complaints feed, hostel FAQ lookup, and instant AI chat assistant.</p>
+                    
+                    <ul class="portal-features-list">
+                        <li>
+                            <svg class="svg-icon icon-sm" style="color: var(--mint-accent);" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                            File complaints with auto priority assignment
+                        </li>
+                        <li>
+                            <svg class="svg-icon icon-sm" style="color: var(--mint-accent);" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                            Apply for weekend & home leave passes
+                        </li>
+                        <li>
+                            <svg class="svg-icon icon-sm" style="color: var(--mint-accent);" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                            Register parents & visitor gate entry
+                        </li>
+                    </ul>
+                </div>
+
+                <a href="/login?role=student" class="btn-primary-mint" style="text-align: center;" data-tooltip="Sign in as Student">
+                    <span>Sign In as Student Resident ➔</span>
+                </a>
+            </div>
+
+            <!-- Warden Portal Card -->
+            <div class="portal-card">
+                <div>
+                    <div class="portal-badge" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3);">WARDEN PORTAL</div>
+                    <h3>Warden Administration Overview</h3>
+                    <p>Real-time oversight dashboard for hostel administrators to monitor open complaints, approve leaves, track visitor gate logs, and manage room occupancy.</p>
+                    
+                    <ul class="portal-features-list">
+                        <li>
+                            <svg class="svg-icon icon-sm" style="color: #3b82f6;" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                            Live metric KPIs (Complaints, Leaves, Visitors, Occupancy)
+                        </li>
+                        <li>
+                            <svg class="svg-icon icon-sm" style="color: #3b82f6;" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                            Inline leave approval / rejection controls
+                        </li>
+                        <li>
+                            <svg class="svg-icon icon-sm" style="color: #3b82f6;" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                            Full AI agent chat audit log inspection
+                        </li>
+                    </ul>
+                </div>
+
+                <a href="/login?role=warden" class="btn-ghost" style="text-align: center; background: #3b82f6; border: none; color: #ffffff;" data-tooltip="Sign in as Warden">
+                    <span>Sign In as Warden Administrator ➔</span>
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+        <div class="footer-brand">
+            <span>SmartHostel Platform</span>
+            <div class="footer-text" style="margin-top: 0.3rem;">Powered by Python Flask, Supabase PostgreSQL & Gemini AI</div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--mint-accent);">
+            <svg class="svg-icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>All Systems Operational (Supabase Connected)</span>
+        </div>
+    </footer>
+
+</body>
+</html>

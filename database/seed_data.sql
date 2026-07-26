@@ -1,6 +1,6 @@
 -- Seed Data for Smart Hostel Management System (SHMS)
 
--- 1. Insert Rooms (10 rooms across Block A and Block B)
+-- 1. Insert Rooms (11 rooms across Block A, Block B, and Block C)
 INSERT OR IGNORE INTO rooms (room_id, room_no, block, floor, capacity, occupied_count, status, amenities) VALUES
 (1, 'A-101', 'Block A', 1, 2, 2, 'Occupied', 'AC, Study Desks, Attached Bathroom, High-speed Wi-Fi'),
 (2, 'A-102', 'Block A', 1, 2, 2, 'Occupied', 'AC, Study Desks, Attached Bathroom, High-speed Wi-Fi'),
@@ -11,25 +11,29 @@ INSERT OR IGNORE INTO rooms (room_id, room_no, block, floor, capacity, occupied_
 (7, 'B-102', 'Block B', 1, 2, 1, 'Available', 'Non-AC, Study Desks, Attached Bathroom, Wi-Fi'),
 (8, 'B-201', 'Block B', 2, 2, 0, 'Available', 'AC, Study Desks, Attached Bathroom, Wi-Fi'),
 (9, 'B-202', 'Block B', 2, 2, 0, 'Available', 'AC, Study Desks, Attached Bathroom, Wi-Fi'),
-(10, 'B-203', 'Block B', 2, 2, 0, 'Available', 'AC, Study Desks, Attached Bathroom, Wi-Fi');
+(10, 'B-203', 'Block B', 2, 2, 0, 'Available', 'AC, Study Desks, Attached Bathroom, Wi-Fi'),
+(11, 'C-101', 'Block C', 1, 2, 1, 'Available', 'AC, Study Desks, Attached Bathroom, Wi-Fi');
 
--- 2. Insert Students (10 students assigned to rooms)
-INSERT OR IGNORE INTO students (student_id, name, roll_no, room_id, contact, email) VALUES
-(1, 'Alex Johnson', 'CS2024-001', 1, '+1-555-0101', 'alex.j@hostel.edu'),
-(2, 'Rahul Sharma', 'CS2024-002', 1, '+1-555-0102', 'rahul.s@hostel.edu'),
-(3, 'Priya Patel', 'EC2024-015', 2, '+1-555-0103', 'priya.p@hostel.edu'),
-(4, 'Sneha Gupta', 'EC2024-016', 2, '+1-555-0104', 'sneha.g@hostel.edu'),
-(5, 'David Chen', 'ME2024-042', 3, '+1-555-0105', 'david.c@hostel.edu'),
-(6, 'Michael Brown', 'EE2024-008', 4, '+1-555-0106', 'michael.b@hostel.edu'),
-(7, 'Emily Davis', 'EE2024-009', 4, '+1-555-0107', 'emily.d@hostel.edu'),
-(8, 'Arjun Verma', 'CS2024-088', 6, '+1-555-0108', 'arjun.v@hostel.edu'),
-(9, 'Karan Malhotra', 'CS2024-089', 6, '+1-555-0109', 'karan.m@hostel.edu'),
-(10, 'Ananya Sen', 'EC2024-099', 7, '+1-555-0110', 'ananya.s@hostel.edu');
+-- 2. Insert Students (with different blocks & rooms for test accounts)
+-- Alex Johnson: Block A, Room A-101
+-- Arjun Verma: Block B, Room B-101
+-- Priya Patel: Block C, Room C-101
+INSERT OR IGNORE INTO students (student_id, name, roll_no, room_id, contact, email, password) VALUES
+(1, 'Alex Johnson', 'CS2024-001', 1, '+1-555-0101', 'alex.j@hostel.edu', 'password123'),
+(2, 'Rahul Sharma', 'CS2024-002', 1, '+1-555-0102', 'rahul.s@hostel.edu', 'password123'),
+(3, 'Priya Patel', 'EC2024-015', 11, '+1-555-0103', 'priya.p@hostel.edu', 'password123'),
+(4, 'Sneha Gupta', 'EC2024-016', 2, '+1-555-0104', 'sneha.g@hostel.edu', 'password123'),
+(5, 'David Chen', 'ME2024-042', 3, '+1-555-0105', 'david.c@hostel.edu', 'password123'),
+(6, 'Michael Brown', 'EE2024-008', 4, '+1-555-0106', 'michael.b@hostel.edu', 'password123'),
+(7, 'Emily Davis', 'EE2024-009', 4, '+1-555-0107', 'emily.d@hostel.edu', 'password123'),
+(8, 'Arjun Verma', 'CS2024-088', 6, '+1-555-0108', 'arjun.v@hostel.edu', 'password123'),
+(9, 'Karan Malhotra', 'CS2024-089', 6, '+1-555-0109', 'karan.m@hostel.edu', 'password123'),
+(10, 'Ananya Sen', 'EC2024-099', 7, '+1-555-0110', 'ananya.s@hostel.edu', 'password123');
 
--- 3. Insert Wardens
-INSERT OR IGNORE INTO wardens (warden_id, name, contact, block_assigned, office_hours) VALUES
-(1, 'Dr. Robert Vance', '+1-555-9001', 'Block A', '09:00 AM - 05:00 PM (Mon-Sat)'),
-(2, 'Prof. Sarah Jenkins', '+1-555-9002', 'Block B', '09:00 AM - 05:00 PM (Mon-Sat)');
+-- 3. Insert Wardens (with warden@hostel.edu / password123 credentials)
+INSERT OR IGNORE INTO wardens (warden_id, name, contact, email, password, block_assigned, office_hours) VALUES
+(1, 'Dr. Robert Vance', '+1-555-9001', 'warden@hostel.edu', 'password123', 'Block A & B', '09:00 AM - 05:00 PM (Mon-Sat)'),
+(2, 'Prof. Sarah Jenkins', '+1-555-9002', 'sarah.j@hostel.edu', 'password123', 'Block C', '09:00 AM - 05:00 PM (Mon-Sat)');
 
 -- 4. Insert Hostel Information (FAQs, Rules, Timings)
 INSERT OR IGNORE INTO hostel_info (info_key, category, value) VALUES
@@ -45,7 +49,7 @@ INSERT OR IGNORE INTO hostel_info (info_key, category, value) VALUES
 -- 5. Insert Initial Complaints
 INSERT OR IGNORE INTO complaints (complaint_id, student_id, category, description, priority, status, created_at) VALUES
 ('CMP-2026-0001', 1, 'Electrical', 'Ceiling light flickers continuously in Room A-101.', 'Medium', 'Open', '2026-07-24 10:15:00'),
-('CMP-2026-0002', 3, 'Plumbing', 'Water leaking from bathroom sink pipe in Room A-102.', 'High', 'In Progress', '2026-07-25 08:30:00'),
+('CMP-2026-0002', 3, 'Plumbing', 'Water leaking from bathroom sink pipe in Room C-101.', 'High', 'In Progress', '2026-07-25 08:30:00'),
 ('CMP-2026-0003', 8, 'Internet', 'Wi-Fi router down on 1st Floor Block B.', 'Urgent', 'Open', '2026-07-26 09:00:00');
 
 -- 6. Insert Initial Visitors

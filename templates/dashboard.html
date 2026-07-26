@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HSM Warden & Admin Management Dashboard</title>
+    <title>Smart Hostel Management System - Warden Portal</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/dashboard.css">
 </head>
@@ -14,31 +14,39 @@
         <aside class="hsm-sidebar">
             <div class="sidebar-brand">
                 <div class="brand-title">
-                    <span style="color: var(--mint-dark);">🛡️</span> HSM
+                    <span style="color: var(--mint-dark); display: inline-flex;">
+                        <svg class="svg-icon icon-lg" viewBox="0 0 24 24"><path d="M3 21h18M3 7v14M21 7v14M6 21V10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v11M9 13h2v3H9zM13 13h2v3h-2zM9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                    </span>
+                    <span>SmartHostel</span>
                 </div>
-                <div class="brand-sub">Admin Oversight OS</div>
+                <div class="brand-sub">Warden Administration</div>
             </div>
 
-            <div class="vault-status-box">
-                <div class="vault-icon">🏛️</div>
+            <div class="vault-status-box" style="background:#eff6ff; border-color:#bfdbfe;">
+                <div class="vault-icon" style="color:#1d4ed8; display: inline-flex;">
+                    <svg class="svg-icon icon-lg" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
                 <div class="vault-info">
-                    <h4>WARDEN PORTAL</h4>
-                    <p>Access Level: Admin</p>
+                    <h4 style="color:#1d4ed8;">WARDEN PORTAL</h4>
+                    <p style="color:#2563eb; font-weight:600;">Administrator</p>
                 </div>
             </div>
 
             <nav class="sidebar-nav">
-                <a href="/" class="nav-link">
-                    <span>🟢</span> STUDENT VAULT
+                <a href="/" class="nav-link" data-tooltip="Switch to Student Chat View">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <span>Student Portal</span>
                 </a>
-                <a href="/dashboard" class="nav-link active">
-                    <span>📊</span> OVERVIEW & STATS
+                <a href="/dashboard" class="nav-link active" data-tooltip="Warden Overview & Analytics">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    <span>Overview & Stats</span>
                 </a>
             </nav>
 
             <div class="sidebar-footer">
-                <a href="/" class="btn-dark-action" style="text-decoration:none;">
-                    <span>💬</span> OPEN STUDENT CHAT
+                <a href="/" class="btn-dark-action" style="text-decoration:none;" data-tooltip="Open Student Interface">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <span>Open Student Portal</span>
                 </a>
             </div>
         </aside>
@@ -48,19 +56,24 @@
             <!-- Top Navigation Bar -->
             <header class="hsm-topbar">
                 <div class="search-pill">
-                    <span>🔍</span>
-                    <input type="text" placeholder="Search warden registry...">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" placeholder="Search students, complaints, leaves, visitors...">
                 </div>
 
                 <div class="topbar-actions">
                     <div class="role-switcher-pill">
                         <a href="/" class="role-option" style="text-decoration:none;">STUDENT</a>
                         <button class="role-option active">WARDEN</button>
-                        <button class="role-option">AUDITOR</button>
                     </div>
 
-                    <button class="icon-btn" id="refreshBtn" title="Refresh Data">🔄</button>
-                    <div class="badge-verified">✓ WARDEN AUTHENTICATED</div>
+                    <button class="icon-btn" id="refreshBtn" data-tooltip="Refresh Dashboard Metrics">
+                        <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                    </button>
+                    
+                    <div class="badge-verified" data-tooltip="Administrator Authenticated">
+                        <svg class="svg-icon icon-sm" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>WARDEN AUTHENTICATED</span>
+                    </div>
                     <div class="user-avatar-circle">W</div>
                 </div>
             </header>
@@ -70,13 +83,19 @@
                 <!-- Title Row -->
                 <div class="dashboard-title-row">
                     <div class="title-group">
-                        <h1>HSM Warden & Management Dashboard</h1>
+                        <h1>Warden & Hostel Administration</h1>
                         <p>Real-time oversight of hostel complaints, leave applications, visitor security, and room capacity.</p>
                     </div>
 
                     <div class="security-tags">
-                        <span class="sec-tag">🔒 AES-256 ENCRYPTED</span>
-                        <span class="sec-tag">⚡ AGENTIC AUDIT LIVE</span>
+                        <span class="sec-tag" style="background:#ecfdf5; border-color:#a7f3d0; color:#059669; font-weight:800;">
+                            <svg class="svg-icon icon-sm" viewBox="0 0 24 24"><path d="M3 21h18M3 7v14M21 7v14M6 21V10a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v11"/></svg>
+                            MAIN CAMPUS
+                        </span>
+                        <span class="sec-tag" style="background:#eff6ff; border-color:#bfdbfe; color:#1d4ed8; font-weight:800;">
+                            <svg class="svg-icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            LIVE AUDIT ACTIVE
+                        </span>
                     </div>
                 </div>
 
@@ -100,7 +119,7 @@
                         <span style="font-size:0.7rem; color:var(--mint-dark); font-weight:700; margin-top:0.3rem;">Registered Gate Passes</span>
                     </div>
 
-                    <div class="hero-key-card" style="padding: 1.2rem;">
+                    <div class="hero-key-card" style="padding: 1.2rem; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
                         <div style="font-size:0.75rem; color:#a1a1aa; font-weight:700;">ROOM OCCUPANCY</div>
                         <h2 id="statOccupancy" style="font-size:2rem; font-weight:800; color:var(--mint-accent); margin-top:0.3rem;">0%</h2>
                         <span style="font-size:0.7rem; color:#a1a1aa;">Hostel Capacity</span>
@@ -134,7 +153,9 @@
                                 </tr>
                             </thead>
                             <tbody id="complaintsTableBody">
-                                <!-- Dynamically loaded -->
+                                <!-- Skeleton placeholders -->
+                                <tr><td colspan="9"><div class="skeleton-row skeleton"></div></td></tr>
+                                <tr><td colspan="9"><div class="skeleton-row skeleton"></div></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -158,7 +179,7 @@
                                 </tr>
                             </thead>
                             <tbody id="leavesTableBody">
-                                <!-- Dynamically loaded -->
+                                <tr><td colspan="9"><div class="skeleton-row skeleton"></div></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -182,7 +203,7 @@
                                 </tr>
                             </thead>
                             <tbody id="visitorsTableBody">
-                                <!-- Dynamically loaded -->
+                                <tr><td colspan="9"><div class="skeleton-row skeleton"></div></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -204,7 +225,7 @@
                                 </tr>
                             </thead>
                             <tbody id="roomsTableBody">
-                                <!-- Dynamically loaded -->
+                                <tr><td colspan="7"><div class="skeleton-row skeleton"></div></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -226,7 +247,7 @@
                                 </tr>
                             </thead>
                             <tbody id="logsTableBody">
-                                <!-- Dynamically loaded -->
+                                <tr><td colspan="7"><div class="skeleton-row skeleton"></div></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -235,6 +256,9 @@
             </div>
         </main>
     </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
 
     <script src="/static/js/dashboard.js"></script>
 </body>

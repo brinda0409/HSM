@@ -46,7 +46,6 @@ body {
     background-color: var(--bg-canvas);
     color: var(--text-primary);
     min-height: 100vh;
-    display: flex;
     overflow-x: hidden;
 }
 
@@ -275,27 +274,33 @@ body {
 
 .role-switcher-pill {
     display: flex;
+    align-items: center;
+    gap: 0.2rem;
     background: #f1f5f9;
     padding: 0.25rem;
     border-radius: 9999px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #cbd5e1;
+    flex-shrink: 0;
 }
 
 .role-option {
-    padding: 0.3rem 0.8rem;
+    padding: 0.35rem 0.85rem;
     border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 700;
-    color: var(--text-secondary);
+    color: #475569;
     cursor: pointer;
     border: none;
     background: transparent;
     transition: all 0.15s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .role-option.active {
-    background: #09090b;
+    background: #0f172a;
     color: #ffffff;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
 }
 
 .badge-verified {
@@ -753,3 +758,237 @@ body {
     font-weight: 800;
     margin: 0.5rem 0;
 }
+
+/* ==========================================================================
+   SaaS Platform UI Additions: Skeleton Loaders, Tooltips, SVGs & Toasting
+   ========================================================================== */
+
+/* SVG Icon Base Styling */
+.svg-icon {
+    width: 1rem;
+    height: 1rem;
+    display: inline-block;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.svg-icon.icon-lg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.svg-icon.icon-sm {
+    width: 0.85rem;
+    height: 0.85rem;
+}
+
+/* Shimmer Skeleton Loaders */
+@keyframes shimmerPulse {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.skeleton {
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 200% 100%;
+    animation: shimmerPulse 1.4s infinite linear;
+    border-radius: 6px;
+    display: block;
+}
+
+.skeleton-dark {
+    background: linear-gradient(90deg, #18181b 25%, #27272a 50%, #18181b 75%);
+    background-size: 200% 100%;
+    animation: shimmerPulse 1.4s infinite linear;
+    border-radius: 6px;
+    display: block;
+}
+
+.skeleton-text {
+    height: 0.85rem;
+    width: 75%;
+    margin-bottom: 0.4rem;
+}
+
+.skeleton-pill {
+    height: 1.25rem;
+    width: 50px;
+    border-radius: 12px;
+}
+
+.skeleton-row {
+    height: 3rem;
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
+
+/* SaaS Floating Tooltips */
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%) scale(0.92);
+    background: #0f172a;
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    z-index: 200;
+}
+
+[data-tooltip]::after {
+    content: '';
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: #0f172a transparent transparent transparent;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    z-index: 200;
+}
+
+[data-tooltip]:hover::before,
+[data-tooltip]:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) scale(1);
+}
+
+[data-tooltip]:active::before,
+[data-tooltip]:active::after {
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* Toast Notifications */
+.toast-container {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 1000;
+}
+
+.toast {
+    background: #0f172a;
+    color: #ffffff;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.65rem 1rem;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    animation: slideInRight 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border-left: 4px solid var(--mint-accent);
+}
+
+.toast.toast-error {
+    border-left-color: #ef4444;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* Announcement Alert Banner Card Layout */
+.alert-banner-card {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.06);
+    margin-top: 1.25rem;
+}
+
+.alert-info-box {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+.alert-icon-wrap {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: #dbeafe;
+    color: #1d4ed8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.alert-details h4 {
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: #1e40af;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.alert-details p {
+    font-size: 0.82rem;
+    color: #1e3a8a;
+    margin: 0.25rem 0 0 0;
+    line-height: 1.4;
+}
+
+.alert-actions {
+    flex-shrink: 0;
+}
+
+.btn-secondary-outline {
+    background: #ffffff;
+    border: 1px solid #93c5fd;
+    color: #1d4ed8;
+    font-size: 0.78rem;
+    font-weight: 800;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    outline: none;
+    letter-spacing: 0.03em;
+}
+
+.btn-secondary-outline:hover {
+    background: #dbeafe;
+    border-color: #3b82f6;
+    color: #1e40af;
+}
+
