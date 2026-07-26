@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HSM SaaS Platform - Sovereign Student Vault & AI Assistant</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    <div class="hsm-wrapper">
+        <!-- Sidebar Navigation -->
+        <aside class="hsm-sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-title">
+                    <span style="color: var(--mint-dark);">🛡️</span> HSM Cloud
+                </div>
+                <div class="brand-sub">SaaS Platform Edition</div>
+            </div>
+
+            <!-- SaaS Subscription Plan Badge -->
+            <div class="saas-plan-badge" onclick="openPricingModal()" style="cursor:pointer;" title="Click to view SaaS plans">
+                <div>
+                    <div>ORGANIZATION</div>
+                    <span class="tier">PRO ENTERPRISE TIER</span>
+                </div>
+                <div style="font-size:0.7rem; background:#27272a; padding:0.2rem 0.5rem; border-radius:6px; color:var(--mint-accent);">ACTIVE</div>
+            </div>
+
+            <div class="vault-status-box">
+                <div class="vault-icon">🔑</div>
+                <div class="vault-info">
+                    <h4>HSM VAULT</h4>
+                    <p>Identity Verified</p>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-link active">
+                    <span>🟢</span> VAULT
+                </a>
+                <a href="#complaints" class="nav-link" onclick="filterView('complaints')">
+                    <span>🔧</span> COMPLAINTS
+                </a>
+                <a href="#leaves" class="nav-link" onclick="filterView('leaves')">
+                    <span>📝</span> LEAVES
+                </a>
+                <a href="#visitors" class="nav-link" onclick="filterView('visitors')">
+                    <span>👨‍👩‍👦</span> VISITORS
+                </a>
+                <a href="#rooms" class="nav-link" onclick="filterView('rooms')">
+                    <span>🏠</span> ROOMS
+                </a>
+                <a href="javascript:void(0)" class="nav-link" onclick="openPricingModal()">
+                    <span>💎</span> PRICING & PLANS
+                </a>
+                <a href="#ai-console" class="nav-link" onclick="focusAiConsole()">
+                    <span>⚡</span> AI CONSOLE
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn-dark-action" onclick="resetDemoData()">
+                    <span>+</span> RESET & RE-SEED
+                </button>
+                <a href="/dashboard" class="footer-link">
+                    <span>⚙️</span> WARDEN DASHBOARD
+                </a>
+                <a href="javascript:void(0)" class="footer-link" onclick="openPricingModal()">
+                    <span>🚀</span> UPGRADE SAAS TIER
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content Canvas -->
+        <main class="hsm-main">
+            
+            <!-- Top Navigation Bar -->
+            <header class="hsm-topbar">
+                <div class="search-pill">
+                    <span>🔍</span>
+                    <input type="text" id="globalSearch" placeholder="Search secure HSM records...">
+                </div>
+
+                <!-- Multi-Tenant Campus Selector -->
+                <div class="tenant-select-pill">
+                    <span>🏢</span>
+                    <select id="tenantSelect">
+                        <option value="main" selected>Main Campus Hostel (Block A & B)</option>
+                        <option value="north">North Campus Residency (Block C)</option>
+                        <option value="west">West Campus Residency (Block D)</option>
+                    </select>
+                </div>
+
+                <!-- Telemetry Quota Bar -->
+                <div class="telemetry-bar">
+                    <span>⚡ AI Quota: 842 / 10,000 reqs/mo</span>
+                </div>
+
+                <div class="topbar-actions">
+                    <div class="role-switcher-pill">
+                        <button class="role-option active">STUDENT</button>
+                        <a href="/dashboard" class="role-option" style="text-decoration:none; display:inline-block;">WARDEN</a>
+                        <button class="role-option">AUDITOR</button>
+                    </div>
+
+                    <div class="student-selector-wrapper" style="margin: 0 0.5rem;">
+                        <select id="studentSelect" style="background:#f1f5f9; border:1px solid #cbd5e1; padding:0.3rem 0.6rem; border-radius:8px; font-size:0.78rem; font-weight:700; outline:none; cursor:pointer;">
+                            <option value="1" selected>Alex Johnson (Room A-101)</option>
+                            <option value="2">Rahul Sharma (Room A-101)</option>
+                            <option value="3">Priya Patel (Room A-102)</option>
+                            <option value="5">David Chen (Room A-103)</option>
+                            <option value="8">Arjun Verma (Room B-101)</option>
+                        </select>
+                    </div>
+
+                    <button class="icon-btn" onclick="location.reload()" title="Refresh">🔄</button>
+                    <button class="icon-btn" title="Notifications">🔔</button>
+
+                    <div class="badge-verified">
+                        <span>✓</span> VERIFIED
+                    </div>
+
+                    <div class="user-avatar-circle" id="userAvatar">A</div>
+                </div>
+            </header>
+
+            <!-- Dashboard Body -->
+            <div class="hsm-body">
+                
+                <!-- Title & Security Badges -->
+                <div class="dashboard-title-row">
+                    <div class="title-group">
+                        <h1 id="vaultTitle">HSM Student Vault</h1>
+                        <p id="vaultSubtitle">Welcome back, <strong id="studentName">Alex Johnson</strong>. Your sovereign hostel data is end-to-end encrypted across verified system nodes.</p>
+                    </div>
+
+                    <div class="security-tags">
+                        <span class="sec-tag" style="background:#ecfdf5; border-color:#a7f3d0; color:#059669; font-weight:800;">🌐 SAAS CLOUD TENANT: ACTIVE</span>
+                        <span class="sec-tag">🔒 END-TO-END ENCRYPTED</span>
+                        <span class="sec-tag">🛡️ SIGNATURE-VERIFIED</span>
+                    </div>
+                </div>
+
+                <!-- Top Hero Grid (Stats + Dark Profile Card) -->
+                <div class="top-hero-grid">
+                    
+                    <!-- Left Hero Stats Card -->
+                    <div class="hero-stats-card">
+                        <div class="stats-inline-row">
+                            <div class="stat-item">
+                                <h2 id="complaintsCnt">3</h2>
+                                <p>Secure Complaints</p>
+                            </div>
+                            <div class="stat-item">
+                                <h2 id="leavesCnt">02</h2>
+                                <p>Active Leaves</p>
+                            </div>
+                            <div class="stat-item">
+                                <h2 id="integrityCnt">99.9%</h2>
+                                <p>Data Integrity</p>
+                            </div>
+                        </div>
+
+                        <div class="sig-row">
+                            <div>
+                                <span>Agent signature: </span>
+                                <span class="sig-code">0x_hsm_8f23901a</span>
+                            </div>
+                            <button class="btn-text-action" onclick="location.reload()">RE-VERIFY ALL</button>
+                        </div>
+                    </div>
+
+                    <!-- Right Dark Hero Key Card -->
+                    <div class="hero-key-card">
+                        <div class="key-card-header">
+                            <span>🔑 KEY VAULT</span>
+                            <span>HSM-ID: 881-22-LX</span>
+                        </div>
+
+                        <div class="key-card-body">
+                            <h3 id="cardStudentName">Alex Johnson</h3>
+                            <p>Sovereign Identity Key Active</p>
+                        </div>
+
+                        <div class="key-card-footer">
+                            <span>VAULT ENCRYPTION</span>
+                            <span class="badge-mint-tag">AES-256</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3 Column Content Grid -->
+                <div class="hsm-grid-3">
+                    
+                    <!-- Card 1: Complaints & Maintenance -->
+                    <div class="hsm-card">
+                        <div class="card-head">
+                            <h3>🔗 Complaints & Maintenance</h3>
+                            <span class="item-status-icon">⚠️</span>
+                        </div>
+                        <div class="item-list" id="complaintItemsList">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Hostel Info & Mess Timings -->
+                    <div class="hsm-card">
+                        <div class="card-head">
+                            <h3>🧪 Hostel Specs & Mess</h3>
+                            <span class="item-status-icon">🍱</span>
+                        </div>
+                        <div class="item-list" id="hostelSpecsList">
+                            <div class="item-row">
+                                <div class="item-main">
+                                    <h5>Mess Timings (Today)</h5>
+                                    <p>Breakfast: 07:30 - 09:30 AM | Dinner: 07:30 - 09:30 PM</p>
+                                </div>
+                                <span class="badge-mint-tag">VERIFIED</span>
+                            </div>
+                            <div class="item-row">
+                                <div class="item-main">
+                                    <h5>Night Curfew Rule</h5>
+                                    <p>10:00 PM Daily entry limit</p>
+                                </div>
+                                <span class="badge-mint-tag">ACTIVE</span>
+                            </div>
+                            <div class="item-row">
+                                <div class="item-main">
+                                    <h5>Room Occupancy</h5>
+                                    <p>Room A-101: 2/2 Beds Occupied</p>
+                                </div>
+                                <span class="badge-mint-tag">FULL</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: HSM AI Console & Vault Activity -->
+                    <div class="ai-partner-card">
+                        <div class="card-head" style="border-bottom: 1px solid #27272a; margin-bottom: 0; padding-bottom: 0.5rem;">
+                            <h3 style="color:#ffffff;">⚡ HSM AI Agent Console</h3>
+                            <span class="badge-mint-tag">GEMINI AI ACTIVE</span>
+                        </div>
+
+                        <!-- Quick Prompt Chips -->
+                        <div class="quick-chips-row">
+                            <button class="chip-mini" onclick="sendQuickPrompt('My room light is not working.')">💡 Light Broken</button>
+                            <button class="chip-mini" onclick="sendQuickPrompt('Apply leave for this weekend.')">📝 Weekend Leave</button>
+                            <button class="chip-mini" onclick="sendQuickPrompt('My parents are visiting tomorrow.')">👨‍👩‍👦 Visitor Tomorrow</button>
+                            <button class="chip-mini" onclick="sendQuickPrompt('What are today\'s mess timings?')">🍱 Mess Timings</button>
+                        </div>
+
+                        <!-- Chat Output Box -->
+                        <div class="ai-chat-box" id="aiChatBox">
+                            <div class="chat-msg agent">
+                                <div class="chat-meta">⚡ Decision Agent System Ready</div>
+                                Hello! I am your <strong>HSM Agentic AI Assistant</strong>. How can I assist you with complaints, leaves, visitors, or room specs today?
+                            </div>
+                        </div>
+
+                        <!-- Chat Input -->
+                        <div class="ai-input-bar">
+                            <input type="text" id="aiInput" placeholder="Ask HSM AI... (e.g. 'My light is broken')">
+                            <button id="aiSendBtn">SEND</button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Vault Activity Timeline & Alert Row -->
+                <div class="hsm-grid-3" style="grid-template-columns: 2fr 1fr;">
+                    
+                    <!-- Alert Banner -->
+                    <div class="alert-banner-card">
+                        <div class="alert-info-box">
+                            <div class="alert-icon-wrap">🚨</div>
+                            <div class="alert-details">
+                                <h4>CRITICAL ALERT: Maintenance Pattern Flagged <span style="font-size:0.75rem; color:#ef4444; font-weight:800; font-family:'JetBrains Mono';">ID: HSM-3391</span></h4>
+                                <p>Our AI-Based Anomaly Detection system has cross-referenced electrical complaints in Block A. Warden audit scheduled.</p>
+                            </div>
+                        </div>
+                        <div class="alert-actions">
+                            <button class="btn-danger-outline">DECLINE & REPORT</button>
+                            <button class="btn-secondary-outline">THIS WAS ME</button>
+                        </div>
+                    </div>
+
+                    <!-- Real-time Vault Activity Feed -->
+                    <div class="hsm-card">
+                        <div class="card-head">
+                            <h3>👁️ Vault Activity Feed</h3>
+                            <span style="font-size:0.7rem; color:var(--mint-dark); font-weight:800;">● Real-time</span>
+                        </div>
+                        <div class="activity-feed" id="activityFeed">
+                            <div class="act-item">
+                                <div class="act-check">✓</div>
+                                <div class="act-content">
+                                    <p>Accessed complaint registry for Student #1</p>
+                                    <span class="act-time">Just now</span>
+                                </div>
+                            </div>
+                            <div class="act-item">
+                                <div class="act-check">✓</div>
+                                <div class="act-content">
+                                    <p>Ran AI leave approval audit</p>
+                                    <span class="act-time">5 mins ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- SaaS Pricing Modal -->
+    <div id="pricingModal" class="modal-overlay">
+        <div class="pricing-modal">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h2 style="font-size:1.5rem; font-weight:800;">HSM SaaS Subscription Plans</h2>
+                    <p style="color:var(--text-secondary); font-size:0.9rem;">Choose the right tier for your university campus or hostel block</p>
+                </div>
+                <button onclick="closePricingModal()" style="background:transparent; border:none; font-size:1.5rem; cursor:pointer;">✕</button>
+            </div>
+
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div>
+                        <h3>Starter Student</h3>
+                        <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.2rem;">Single hostel resident portal</p>
+                        <div class="price">$0 <span style="font-size:0.8rem; font-weight:400;">/ Forever</span></div>
+                        <ul style="font-size:0.85rem; color:var(--text-secondary); padding-left:1rem; margin-top:1rem; display:flex; flex-direction:column; gap:0.4rem;">
+                            <li>Basic AI Complaint Filing</li>
+                            <li>Leave Application Status</li>
+                            <li>Hostel FAQ Lookup</li>
+                            <li>100 AI queries/mo</li>
+                        </ul>
+                    </div>
+                    <button class="btn-dark-action" style="margin-top:1.5rem;" onclick="closePricingModal()">CURRENT PLAN</button>
+                </div>
+
+                <div class="pricing-card featured">
+                    <div>
+                        <div style="font-size:0.7rem; background:var(--mint-accent); color:#0f172a; font-weight:800; padding:0.2rem 0.5rem; border-radius:6px; width:fit-content; margin-bottom:0.5rem;">RECOMMENDED</div>
+                        <h3>Warden Pro Tier</h3>
+                        <p style="font-size:0.8rem; color:#a1a1aa; margin-top:0.2rem;">Full multi-agent automation</p>
+                        <div class="price" style="color:var(--mint-accent);">$49 <span style="font-size:0.8rem; font-weight:400; color:#a1a1aa;">/ month</span></div>
+                        <ul style="font-size:0.85rem; color:#d4d4d8; padding-left:1rem; margin-top:1rem; display:flex; flex-direction:column; gap:0.4rem;">
+                            <li>Decision Agent + 5 Worker Agents</li>
+                            <li>Leave Approval Workflow</li>
+                            <li>Visitor Visiting-Hours Rules Engine</li>
+                            <li>Real-Time Warden Audit Logs</li>
+                            <li>10,000 AI queries/mo</li>
+                        </ul>
+                    </div>
+                    <button class="btn-dark-action" style="background:var(--mint-accent); color:#0f172a; font-weight:800; margin-top:1.5rem;" onclick="closePricingModal()">ACTIVE PLAN</button>
+                </div>
+
+                <div class="pricing-card">
+                    <div>
+                        <h3>Enterprise Campus</h3>
+                        <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.2rem;">Multi-hostel university setup</p>
+                        <div class="price">$199 <span style="font-size:0.8rem; font-weight:400;">/ month</span></div>
+                        <ul style="font-size:0.85rem; color:var(--text-secondary); padding-left:1rem; margin-top:1rem; display:flex; flex-direction:column; gap:0.4rem;">
+                            <li>Unlimited Hostel Blocks & Tenants</li>
+                            <li>Custom Gemini Prompt Instructions</li>
+                            <li>Dedicated Database Instance</li>
+                            <li>24/7 Priority SLA Support</li>
+                            <li>Unlimited AI queries</li>
+                        </ul>
+                    </div>
+                    <button class="btn-dark-action" style="margin-top:1.5rem;" onclick="closePricingModal()">UPGRADE TO ENTERPRISE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/chat.js"></script>
+</body>
+</html>

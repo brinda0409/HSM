@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HSM Warden & Admin Management Dashboard</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+
+    <div class="hsm-wrapper">
+        <!-- Sidebar Navigation -->
+        <aside class="hsm-sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-title">
+                    <span style="color: var(--mint-dark);">🛡️</span> HSM
+                </div>
+                <div class="brand-sub">Admin Oversight OS</div>
+            </div>
+
+            <div class="vault-status-box">
+                <div class="vault-icon">🏛️</div>
+                <div class="vault-info">
+                    <h4>WARDEN PORTAL</h4>
+                    <p>Access Level: Admin</p>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-link">
+                    <span>🟢</span> STUDENT VAULT
+                </a>
+                <a href="/dashboard" class="nav-link active">
+                    <span>📊</span> OVERVIEW & STATS
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="/" class="btn-dark-action" style="text-decoration:none;">
+                    <span>💬</span> OPEN STUDENT CHAT
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="hsm-main">
+            <!-- Top Navigation Bar -->
+            <header class="hsm-topbar">
+                <div class="search-pill">
+                    <span>🔍</span>
+                    <input type="text" placeholder="Search warden registry...">
+                </div>
+
+                <div class="topbar-actions">
+                    <div class="role-switcher-pill">
+                        <a href="/" class="role-option" style="text-decoration:none;">STUDENT</a>
+                        <button class="role-option active">WARDEN</button>
+                        <button class="role-option">AUDITOR</button>
+                    </div>
+
+                    <button class="icon-btn" id="refreshBtn" title="Refresh Data">🔄</button>
+                    <div class="badge-verified">✓ WARDEN AUTHENTICATED</div>
+                    <div class="user-avatar-circle">W</div>
+                </div>
+            </header>
+
+            <div class="hsm-body">
+                
+                <!-- Title Row -->
+                <div class="dashboard-title-row">
+                    <div class="title-group">
+                        <h1>HSM Warden & Management Dashboard</h1>
+                        <p>Real-time oversight of hostel complaints, leave applications, visitor security, and room capacity.</p>
+                    </div>
+
+                    <div class="security-tags">
+                        <span class="sec-tag">🔒 AES-256 ENCRYPTED</span>
+                        <span class="sec-tag">⚡ AGENTIC AUDIT LIVE</span>
+                    </div>
+                </div>
+
+                <!-- KPI Metric Cards Grid -->
+                <div class="top-hero-grid" style="grid-template-columns: repeat(4, 1fr);">
+                    <div class="hero-stats-card" style="padding: 1.2rem;">
+                        <div style="font-size:0.8rem; font-weight:700; color:var(--text-secondary);">OPEN COMPLAINTS</div>
+                        <h2 id="statComplaints" style="font-size:2rem; font-weight:800; color:#0f172a; margin-top:0.3rem;">0</h2>
+                        <span style="font-size:0.7rem; color:#ef4444; font-weight:700; margin-top:0.3rem;">Action Required</span>
+                    </div>
+
+                    <div class="hero-stats-card" style="padding: 1.2rem;">
+                        <div style="font-size:0.8rem; font-weight:700; color:var(--text-secondary);">PENDING LEAVES</div>
+                        <h2 id="statLeaves" style="font-size:2rem; font-weight:800; color:#0f172a; margin-top:0.3rem;">0</h2>
+                        <span style="font-size:0.7rem; color:#d97706; font-weight:700; margin-top:0.3rem;">Awaiting Approval</span>
+                    </div>
+
+                    <div class="hero-stats-card" style="padding: 1.2rem;">
+                        <div style="font-size:0.8rem; font-weight:700; color:var(--text-secondary);">TODAY'S VISITORS</div>
+                        <h2 id="statVisitors" style="font-size:2rem; font-weight:800; color:#0f172a; margin-top:0.3rem;">0</h2>
+                        <span style="font-size:0.7rem; color:var(--mint-dark); font-weight:700; margin-top:0.3rem;">Registered Gate Passes</span>
+                    </div>
+
+                    <div class="hero-key-card" style="padding: 1.2rem;">
+                        <div style="font-size:0.75rem; color:#a1a1aa; font-weight:700;">ROOM OCCUPANCY</div>
+                        <h2 id="statOccupancy" style="font-size:2rem; font-weight:800; color:var(--mint-accent); margin-top:0.3rem;">0%</h2>
+                        <span style="font-size:0.7rem; color:#a1a1aa;">Hostel Capacity</span>
+                    </div>
+                </div>
+
+                <!-- Section Tabs -->
+                <div class="tabs-header">
+                    <button class="tab-btn active" data-tab="complaints">Complaints Management</button>
+                    <button class="tab-btn" data-tab="leaves">Leave Applications</button>
+                    <button class="tab-btn" data-tab="visitors">Visitor Logs</button>
+                    <button class="tab-btn" data-tab="rooms">Room Occupancy & Allocation</button>
+                    <button class="tab-btn" data-tab="logs">AI Agent Chat Audit Logs</button>
+                </div>
+
+                <!-- Tab 1: Complaints Table -->
+                <div id="tab-complaints" class="tab-content">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Complaint ID</th>
+                                    <th>Student</th>
+                                    <th>Room</th>
+                                    <th>Category</th>
+                                    <th>Description</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="complaintsTableBody">
+                                <!-- Dynamically loaded -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Leaves Table -->
+                <div id="tab-leaves" class="tab-content" style="display: none;">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Leave ID</th>
+                                    <th>Student</th>
+                                    <th>Room</th>
+                                    <th>Leave Type</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leavesTableBody">
+                                <!-- Dynamically loaded -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Visitors Table -->
+                <div id="tab-visitors" class="tab-content" style="display: none;">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Visitor Name</th>
+                                    <th>Contact</th>
+                                    <th>Host Student</th>
+                                    <th>Room</th>
+                                    <th>Visit Date</th>
+                                    <th>Visit Time</th>
+                                    <th>Purpose</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="visitorsTableBody">
+                                <!-- Dynamically loaded -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 4: Rooms Table -->
+                <div id="tab-rooms" class="tab-content" style="display: none;">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Room No</th>
+                                    <th>Block</th>
+                                    <th>Floor</th>
+                                    <th>Capacity</th>
+                                    <th>Occupied</th>
+                                    <th>Status</th>
+                                    <th>Amenities</th>
+                                </tr>
+                            </thead>
+                            <tbody id="roomsTableBody">
+                                <!-- Dynamically loaded -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 5: AI Agent Audit Logs Table -->
+                <div id="tab-logs" class="tab-content" style="display: none;">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Log ID</th>
+                                    <th>Student ID</th>
+                                    <th>User Input Message</th>
+                                    <th>Detected Intent(s)</th>
+                                    <th>Agents Invoked</th>
+                                    <th>Final Synthesized Response</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsTableBody">
+                                <!-- Dynamically loaded -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+/* HSM Dashboard Specific Table Styles */
+
+.tabs-header {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 2px solid #e2e8f0;
+    margin-bottom: 1.25rem;
+    overflow-x: auto;
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 0.75rem 1.25rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s ease;
+}
+
+.tab-btn:hover {
+    color: var(--text-primary);
+}
+
+.tab-btn.active {
+    color: var(--mint-dark);
+    border-bottom-color: var(--mint-dark);
+}
+
+.table-container {
+    background: #ffffff;
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.85rem;
+}
+
+.data-table th {
+    background: #f8fafc;
+    padding: 0.85rem 1.1rem;
+    color: var(--text-secondary);
+    font-weight: 700;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.data-table td {
+    padding: 0.85rem 1.1rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--text-primary);
+}
+
+.data-table tr:hover {
+    background: #f8fafc;
+}
+
+/* Badges */
+.badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.badge-open, .badge-pending { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+.badge-in-progress { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+.badge-resolved, .badge-approved { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+.badge-rejected, .badge-closed { background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5; }
+
+.badge-priority-low { background: #f1f5f9; color: #64748b; }
+.badge-priority-medium { background: #eff6ff; color: #2563eb; }
+.badge-priority-high { background: #fffbeb; color: #d97706; }
+.badge-priority-urgent { background: #fef2f2; color: #dc2626; }
+
+.action-select {
+    background: #ffffff;
+    color: var(--text-primary);
+    border: 1px solid #cbd5e1;
+    padding: 0.3rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    outline: none;
+    cursor: pointer;
+}
+
+.btn-action {
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-approve { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+.btn-reject { background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5; }
