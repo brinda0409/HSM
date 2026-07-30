@@ -327,9 +327,9 @@ Respond ONLY with valid JSON inside ```json ``` block or raw JSON string. Do not
         """
         Synthesizes a friendly, natural language response based on agent execution outputs.
         """
-        # If leave_agent, complaint_agent, or visitor_agent returned a multi-step agentic pipeline message, preserve it directly!
+        # If leave_agent, complaint_agent, visitor_agent, or room_agent returned a multi-step agentic pipeline message, preserve it directly!
         for res in agent_results:
-            if res.get("agent") in ["leave_agent", "complaint_agent", "visitor_agent"] and res.get("message") and ("Autonomous" in res.get("message") or "Pipeline" in res.get("message")):
+            if res.get("agent") in ["leave_agent", "complaint_agent", "visitor_agent", "room_agent"] and res.get("message") and ("Autonomous" in res.get("message") or "Pipeline" in res.get("message")):
                 return res.get("message")
 
         if self.model:
@@ -362,7 +362,7 @@ Response:
             data = res.get("data", {})
             msg = res.get("message", "")
 
-            if agent in ["complaint_agent", "leave_agent", "visitor_agent"]:
+            if agent in ["complaint_agent", "leave_agent", "visitor_agent", "room_agent"]:
                 responses.append(msg)
 
             elif agent == "visitor_agent":

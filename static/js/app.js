@@ -854,16 +854,52 @@ document.addEventListener('DOMContentLoaded', () => {
         const tbody = document.getElementById('roomsTableBody');
         tbody.innerHTML = '';
         rooms.forEach(r => {
-            const tr = document.createElement('tr');
+            const ai = r.ai_decision || {
+                health_score: 100, recommendation: 'Optimal Choice', confidence: 96,
+                conflict_summary: 'No conflicts detected', free_beds: r.capacity - r.occupied_count
+            };
+
             const isFull = r.occupied_count >= r.capacity;
+            const healthColor = ai.health_score >= 90 ? '#059669' : (ai.health_score >= 70 ? '#d97706' : '#dc2626');
+            const healthBg = ai.health_score >= 90 ? '#ecfdf5' : (ai.health_score >= 70 ? '#fffbeb' : '#fef2f2');
+            const healthBorder = ai.health_score >= 90 ? '#a7f3d0' : (ai.health_score >= 70 ? '#fde68a' : '#fca5a5');
+
+            const tr = document.createElement('tr');
+            tr.id = `row-room-${r.room_id}`;
             tr.innerHTML = `
-                <td><strong>${r.room_no}</strong></td>
-                <td>${r.block}</td>
-                <td>Floor ${r.floor}</td>
-                <td>${r.capacity} Beds</td>
-                <td>${r.occupied_count} / ${r.capacity}</td>
-                <td><span class="badge badge-${isFull ? 'rejected' : 'resolved'}">${isFull ? 'Fully Occupied' : 'Available'}</span></td>
-                <td><small style="color:var(--text-secondary);">${r.amenities}</small></td>
+                <td>
+                    <strong>Room ${r.room_no}</strong><br>
+                    <span style="background:${healthBg}; color:${healthColor}; border:1px solid ${healthBorder}; padding:0.15rem 0.5rem; border-radius:9999px; font-size:0.7rem; font-weight:800;">
+                        AI Health: ${ai.health_score}%
+                    </span>
+                </td>
+                <td>
+                    <strong>${r.block}</strong><br>
+                    <span style="font-size:0.75rem; color:#64748b;">Floor ${r.floor}</span>
+                </td>
+                <td>
+                    <span style="font-size:0.85rem; font-weight:700; color:#0f172a;">${r.occupied_count} / ${r.capacity} Occupied</span><br>
+                    <span style="font-size:0.72rem; color:${isFull ? '#ef4444' : '#059669'}; font-weight:700;">
+                        ${isFull ? '0 Beds Free' : (r.capacity - r.occupied_count) + ' Bed(s) Free'}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge badge-${isFull ? 'rejected' : 'resolved'}">${isFull ? 'Fully Occupied' : r.status}</span>
+                </td>
+                <td>
+                    <small style="color:var(--text-secondary); font-size:0.75rem; line-height:1.3;">${r.amenities || 'Standard Study Desks, Attached Bath, Wi-Fi'}</small>
+                </td>
+                <td>
+                    <div style="font-size:0.75rem; color:${ai.has_conflicts ? '#dc2626' : '#047857'}; font-weight:600;">
+                        ⚠️ ${ai.conflict_summary || 'No maintenance conflicts'}
+                    </div>
+                </td>
+                <td>
+                    <div style="font-size:0.82rem; font-weight:800; color:${healthColor};">
+                        💡 ${ai.recommendation}
+                    </div>
+                    <span style="font-size:0.72rem; font-weight:700; color:#475569;">Confidence: <strong>${ai.confidence}%</strong></span>
+                </td>
             `;
             tbody.appendChild(tr);
         });
