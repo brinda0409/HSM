@@ -73,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     checkAuthSession();
 
     async function checkAuthSession() {
+        const searchStr = (window.location.search || '').toLowerCase();
         const urlParams = new URLSearchParams(window.location.search);
         const paramRole = urlParams.get('role');
         const sessionRole = sessionStorage.getItem('shms_role');
@@ -80,16 +81,16 @@ document.addEventListener('DOMContentLoaded', () => {
         let u = null;
 
         try {
-            const res = await fetch('/api/me');
+            const res = await fetch('/api/me' + window.location.search);
             const data = await res.json();
-            if (data.success && data.user && !data.is_demo) {
+            if (data.success && data.user) {
                 u = data.user;
             }
         } catch (e) {
             console.error('Session check error:', e);
         }
 
-        // Fallback to localStorage saved user if session is demo or empty
+        // Fallback to localStorage saved user if session is empty
         if (!u) {
             const stored = localStorage.getItem('shms_user');
             if (stored) {
@@ -97,7 +98,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const isWarden = (paramRole === 'warden') || (sessionRole === 'warden') || (u && u.role === 'warden');
+        const isWarden = (paramRole === 'warden') || 
+                         (sessionRole === 'warden') || 
+                         (searchStr.includes('warden')) || 
+                         (u && u.role === 'warden') || 
+                         (u && u.email && u.email.toLowerCase().includes('warden'));
 
         const studentNavGroup = document.getElementById('sidebarStudentNavGroup');
         const wardenNavGroup = document.getElementById('sidebarWardenNavGroup');

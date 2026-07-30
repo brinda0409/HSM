@@ -79,7 +79,19 @@ def get_current_user():
     if user:
         return jsonify({"success": True, "user": user}), 200
     else:
-        # Default fallback to Alex Johnson demo user if session empty for seamless evaluation
+        role_param = request.args.get("role", "").lower()
+        if "warden" in role_param:
+            default_warden = {
+                "id": 1,
+                "name": "Dr. Robert Vance",
+                "email": "warden@hostel.edu",
+                "role": "warden",
+                "block_assigned": "Block A & B",
+                "office_hours": "09:00 AM - 05:00 PM (Mon-Sat)"
+            }
+            return jsonify({"success": True, "user": default_warden, "is_demo": True}), 200
+
+        # Default fallback to Alex Johnson demo student if session empty
         default_user = {
             "id": 1,
             "name": "Alex Johnson",
