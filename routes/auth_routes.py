@@ -85,8 +85,9 @@ def get_current_user():
     if user:
         return jsonify({"success": True, "user": user}), 200
     else:
+        referrer = request.referrer or ""
         role_param = request.args.get("role", "").lower()
-        if "warden" in role_param:
+        if "warden" in role_param or "warden" in referrer.lower():
             default_warden = {
                 "id": 1,
                 "name": "Dr. Robert Vance",

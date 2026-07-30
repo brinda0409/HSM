@@ -112,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const studentSelectWrap = document.getElementById('studentSelectWrap');
 
         if (isWarden) {
+            sessionStorage.setItem('shms_role', 'warden');
             // Strictly isolate Warden view: Hide student navigation
             if (studentNavGroup) studentNavGroup.style.display = 'none';
             if (wardenNavGroup) wardenNavGroup.style.display = 'block';
@@ -119,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (studentSelectWrap) studentSelectWrap.style.display = 'none';
 
             const topAuthText = document.getElementById('topAuthText');
-            const name = (u && u.name) ? u.name.toUpperCase() : 'DR. ROBERT VANCE';
+            const name = (u && u.role === 'warden' && u.name) ? u.name.toUpperCase() : 'DR. ROBERT VANCE';
             if (topAuthText) topAuthText.textContent = `WARDEN: ${name}`;
             switchMainView('warden');
         } else {
