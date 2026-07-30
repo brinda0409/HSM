@@ -18,48 +18,46 @@ def login():
     if not email or not password:
         return jsonify({"success": False, "message": "Email and password are required."}), 400
 
-    # 1. Check Warden Table
-    if role == "warden" or not role:
-        warden = query_one("SELECT * FROM wardens WHERE LOWER(email) = ? AND password = ?", (email, password))
-        if warden:
-            user_data = {
-                "id": warden["warden_id"],
-                "name": warden["name"],
-                "email": warden["email"],
-                "role": "warden",
-                "block_assigned": warden["block_assigned"],
-                "office_hours": warden["office_hours"]
-            }
-            session["user"] = user_data
-            logger.info(f"Warden logged in: {warden['name']} ({warden['email']})")
-            return jsonify({"success": True, "user": user_data, "message": "Warden authenticated successfully."}), 200
+    # 1. Check Warden Table First (or if email contains 'warden' or role == 'warden')
+    warden = query_one("SELECT * FROM wardens WHERE LOWER(email) = ? AND password = ?", (email, password))
+    if warden:
+        user_data = {
+            "id": warden["warden_id"],
+            "name": warden["name"],
+            "email": warden["email"],
+            "role": "warden",
+            "block_assigned": warden["block_assigned"],
+            "office_hours": warden["office_hours"]
+        }
+        session["user"] = user_data
+        logger.info(f"Warden logged in: {warden['name']} ({warden['email']})")
+        return jsonify({"success": True, "user": user_data, "message": "Warden authenticated successfully."}), 200
 
     # 2. Check Student Table
-    if role == "student" or not role:
-        login_identifier = email # Can be email or roll_no typed in input box
-        student = query_one("""SELECT s.*, r.room_no, r.block 
-                               FROM students s 
-                               LEFT JOIN rooms r ON s.room_id = r.room_id 
-                               WHERE (LOWER(s.email) = ? OR UPPER(s.roll_no) = ?) AND s.password = ?""", 
-                            (login_identifier.lower(), login_identifier.upper(), password))
-        if student:
-            if student.get("status") == "Suspended":
-                return jsonify({"success": False, "message": "Your student account is currently Suspended by the Warden. Please contact administration."}), 403
+    login_identifier = email # Can be email or roll_no typed in input box
+    student = query_one("""SELECT s.*, r.room_no, r.block 
+                           FROM students s 
+                           LEFT JOIN rooms r ON s.room_id = r.room_id 
+                           WHERE (LOWER(s.email) = ? OR UPPER(s.roll_no) = ?) AND s.password = ?""", 
+                        (login_identifier.lower(), login_identifier.upper(), password))
+    if student:
+        if student.get("status") == "Suspended":
+            return jsonify({"success": False, "message": "Your student account is currently Suspended by the Warden. Please contact administration."}), 403
 
-            user_data = {
-                "id": student["student_id"],
-                "name": student["name"],
-                "roll_no": student["roll_no"],
-                "email": student["email"],
-                "contact": student["contact"],
-                "role": "student",
-                "room_no": student["room_no"] or "Unassigned",
-                "block": student["block"] or "Main Campus",
-                "status": student.get("status") or "Active"
-            }
-            session["user"] = user_data
-            logger.info(f"Student logged in: {student['name']} ({student['roll_no']})")
-            return jsonify({"success": True, "user": user_data, "message": "Student authenticated successfully."}), 200
+        user_data = {
+            "id": student["student_id"],
+            "name": student["name"],
+            "roll_no": student["roll_no"],
+            "email": student["email"],
+            "contact": student["contact"],
+            "role": "student",
+            "room_no": student["room_no"] or "Unassigned",
+            "block": student["block"] or "Main Campus",
+            "status": student.get("status") or "Active"
+        }
+        session["user"] = user_data
+        logger.info(f"Student logged in: {student['name']} ({student['roll_no']})")
+        return jsonify({"success": True, "user": user_data, "message": "Student authenticated successfully."}), 200
 
     return jsonify({"success": False, "message": "Invalid email/roll number or password. Please check your credentials."}), 401
 

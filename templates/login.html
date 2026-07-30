@@ -345,6 +345,7 @@
                 const data = await res.json();
                 if (data.success) {
                     localStorage.setItem('shms_user', JSON.stringify(data.user));
+                    sessionStorage.setItem('shms_role', data.user.role);
                     showToast(`Authenticated as ${data.user.name}`, 'info');
                     setTimeout(() => {
                         window.location.href = '/app?role=' + (data.user.role || 'student');

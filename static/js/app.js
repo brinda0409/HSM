@@ -75,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function checkAuthSession() {
         const urlParams = new URLSearchParams(window.location.search);
         const paramRole = urlParams.get('role');
+        const sessionRole = sessionStorage.getItem('shms_role');
 
         let u = null;
 
@@ -96,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const isWarden = (paramRole === 'warden') || (u && u.role === 'warden');
+        const isWarden = (paramRole === 'warden') || (sessionRole === 'warden') || (u && u.role === 'warden');
 
         const studentNavGroup = document.getElementById('sidebarStudentNavGroup');
         const wardenNavGroup = document.getElementById('sidebarWardenNavGroup');
