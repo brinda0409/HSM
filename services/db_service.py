@@ -212,17 +212,25 @@ def init_db(reset=False):
         logger.info(f"Initializing SQLite database at: {db_path}")
         conn = get_connection()
         try:
-            if os.path.exists(schema_file):
-                with open(schema_file, "r", encoding="utf-8") as f:
-                    schema_sql = f.read()
-                conn.executescript(schema_sql)
-                logger.info("SQLite schema applied successfully.")
-            
-            if os.path.exists(seed_file):
-                with open(seed_file, "r", encoding="utf-8") as f:
-                    seed_sql = f.read()
-                conn.executescript(seed_sql)
-                logger.info("SQLite seed data applied successfully.")
+            # Check if tables are already initialized to prevent duplicate script execution on cold starts
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='students';")
+            already_initialized = cursor.fetchone() is not None
+
+            if not already_initialized:
+                if os.path.exists(schema_file):
+                    with open(schema_file, "r", encoding="utf-8") as f:
+                        schema_sql = f.read()
+                    conn.executescript(schema_sql)
+                    logger.info("SQLite schema applied successfully.")
+                
+                if os.path.exists(seed_file):
+                    with open(seed_file, "r", encoding="utf-8") as f:
+                        seed_sql = f.read()
+                    conn.executescript(seed_sql)
+                    logger.info("SQLite seed data applied successfully.")
+            else:
+                logger.info("SQLite database already initialized.")
 
             # Migration check: Ensure status column exists in students table
             try:
@@ -234,6 +242,5 @@ def init_db(reset=False):
         except Exception as e:
             conn.rollback()
             logger.error(f"Error during SQLite database initialization: {e}")
-            raise e
         finally:
             conn.close()

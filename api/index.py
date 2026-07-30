@@ -12,5 +12,7 @@ if not os.getenv("DATABASE_PATH") and not os.getenv("DATABASE_URL"):
 
 from app import app
 
-# Export wsgi application handler for Vercel serverless
+# Export WSGI application handlers for all Vercel serverless adapters
+handler = app
+application = app
 app = app
