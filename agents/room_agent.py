@@ -23,8 +23,12 @@ class RoomAgent:
 
         logger.info(f"[RoomAgent] Processing intent: {intent} for student: {student_id}")
 
-        if intent in ["get_room_info", "check_availability", "get_room"]:
+        if intent in ["get_room_info", "check_availability", "get_room", "empty_rooms"]:
             room_no = entities.get("room_no")
+            is_empty_query = entities.get("filter") == "empty" or intent == "check_availability" or intent == "empty_rooms"
+            
+            if is_empty_query or not room_no:
+                return self.get_available_rooms()
             return self.get_room(room_no, student_id)
         elif intent in ["allocate_room"]:
             target_student_id = entities.get("student_id") or student_id
@@ -44,6 +48,38 @@ class RoomAgent:
                 "message": f"Unsupported room intent: {intent}"
             }
 
+    def get_available_rooms(self):
+        """Lists all vacant/empty rooms with available bed capacity."""
+        empty_rooms = query_all("SELECT * FROM rooms WHERE occupied_count < capacity AND status != 'Maintenance' ORDER BY block, room_no")
+        total_empty_rooms = len(empty_rooms)
+        total_free_beds = sum(r["capacity"] - r["occupied_count"] for r in empty_rooms)
+        
+        if not empty_rooms:
+            return {
+                "success": True,
+                "agent": self.name,
+                "data": {"rooms": [], "empty_room_count": 0, "free_bed_count": 0},
+                "message": "All hostel rooms are currently fully occupied. There are 0 empty rooms."
+            }
+
+        room_lines = []
+        for r in empty_rooms:
+            free_beds = r["capacity"] - r["occupied_count"]
+            room_lines.append(f"• Room **{r['room_no']}** ({r['block']}, Floor {r['floor']}): **{free_beds} bed(s) available** (Occupied: {r['occupied_count']}/{r['capacity']})")
+
+        msg = f"🏠 **Room Vacancy Report**:\nThere are currently **{total_empty_rooms} vacant room(s)** with **{total_free_beds} total free bed(s)**:\n\n" + "\n".join(room_lines)
+
+        return {
+            "success": True,
+            "agent": self.name,
+            "data": {
+                "empty_rooms": empty_rooms,
+                "empty_room_count": total_empty_rooms,
+                "free_bed_count": total_free_beds
+            },
+            "message": msg
+        }
+
     def get_room(self, room_no=None, student_id=None):
         """Checks details and availability for a specific room or student's current room."""
         if room_no:
@@ -53,7 +89,7 @@ class RoomAgent:
                                 JOIN students s ON r.room_id = s.room_id 
                                 WHERE s.student_id = ?""", (student_id,))
         else:
-            room = None
+            return self.get_available_rooms()
 
         if room:
             is_available = room["occupied_count"] < room["capacity"] and room["status"] != "Maintenance"
@@ -68,12 +104,7 @@ class RoomAgent:
                 "message": f"Room {room['room_no']} ({room['block']}): Capacity {room['capacity']}, Occupied {room['occupied_count']}. Status: {room['status']}."
             }
         else:
-            return {
-                "success": False,
-                "agent": self.name,
-                "data": {},
-                "message": f"Room '{room_no or 'for student ' + str(student_id)}' not found in database."
-            }
+            return self.get_available_rooms()
 
     def allocate_room(self, student_id, room_no):
         """Allocates a student to a room if capacity permits."""

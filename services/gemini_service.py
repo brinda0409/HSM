@@ -247,19 +247,27 @@ Respond ONLY with valid JSON inside ```json ``` block or raw JSON string. Do not
         if "-" not in room_no if room_no else False:
             room_no = room_no[0] + "-" + room_no[1:]
 
-        if any(w in msg_lower for w in ["room", "availability", "available", "occupancy", "vacant", "capacity"]):
+        if any(w in msg_lower for w in ["room", "rooms", "availability", "available", "occupancy", "vacant", "capacity", "empty", "free"]):
             if "transfer" in msg_lower or "change room" in msg_lower:
                 intents.append({
                     "intent": "transfer_room",
                     "entities": {
-                        "to_room_no": room_no or "B-201"
+                        "to_room_no": room_no
+                    }
+                })
+            elif any(w in msg_lower for w in ["empty", "vacant", "free", "available", "vacancy", "how many", "count"]):
+                intents.append({
+                    "intent": "check_availability",
+                    "entities": {
+                        "filter": "empty",
+                        "room_no": room_no
                     }
                 })
             else:
                 intents.append({
                     "intent": "get_room_info",
                     "entities": {
-                        "room_no": room_no or "A-101"
+                        "room_no": room_no
                     }
                 })
 
