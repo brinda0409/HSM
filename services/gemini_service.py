@@ -50,16 +50,15 @@ Analyze the user's message and return a SINGLE JSON object with the following sc
 {{
   "intents": [
     {{
-      "intent": "register_complaint | get_complaint_status | register_visitor | get_room_info | allocate_room | transfer_room | apply_leave | get_leave_status | get_hostel_info | generate_report | unknown",
+      "intent": "register_complaint | get_complaint_status | resolve_complaint | register_visitor | approve_visitor | reject_visitor | get_room_info | allocate_room | transfer_room | apply_leave | get_leave_status | approve_leave | reject_leave | approve_all_leaves | get_hostel_info | generate_report | unknown",
       "category": "Electrical | Plumbing | Furniture | Internet | Cleanliness | Other",
       "entities": {{
-         // complaint entities: description, category, priority (Low/Medium/High/Urgent)
-         // visitor entities: visitor_name, contact, purpose, visit_date (YYYY-MM-DD), visit_time (HH:MM)
+         // complaint entities: description, category, priority (Low/Medium/High/Urgent), complaint_id
+         // visitor entities: visitor_name, contact, purpose, visit_date (YYYY-MM-DD), visit_time (HH:MM), visitor_id
          // room entities: room_no, to_room_no
-         // leave entities: leave_type, start_date (YYYY-MM-DD), end_date (YYYY-MM-DD), reason
+         // leave entities: leave_type, start_date (YYYY-MM-DD), end_date (YYYY-MM-DD), reason, leave_id
          // info entities: info_key, category, query_term
          // report entities: start_date (YYYY-MM-DD), end_date (YYYY-MM-DD), category
-         // complaint status entities: complaint_id
       }}
     }}
   ]
@@ -112,8 +111,47 @@ Respond ONLY with valid JSON inside ```json ``` block or raw JSON string. Do not
         weekend_start = saturday.strftime("%Y-%m-%d")
         weekend_end = sunday.strftime("%Y-%m-%d")
 
+        # Extract ID patterns
+        lv_match = re.search(r'(LV-\d{4}-\d{4})', user_message, re.IGNORECASE)
+        cmp_match = re.search(r'(CMP-\d{4}-\d{4})', user_message, re.IGNORECASE)
+        leave_id_found = lv_match.group(1).upper() if lv_match else None
+        cmp_id_found = cmp_match.group(1).upper() if cmp_match else None
+
+        # Warden Admin Commands: Approvals & Resolutions
+        if "approve" in msg_lower and "leave" in msg_lower:
+            if any(w in msg_lower for w in ["all", "pending", "every"]):
+                intents.append({
+                    "intent": "approve_all_leaves",
+                    "entities": {"start_date": current_date_str if "today" in msg_lower else (tomorrow_str if "tomorrow" in msg_lower else None)}
+                })
+            else:
+                intents.append({
+                    "intent": "approve_leave",
+                    "entities": {"leave_id": leave_id_found}
+                })
+        elif "reject" in msg_lower and "leave" in msg_lower:
+            intents.append({
+                "intent": "reject_leave",
+                "entities": {"leave_id": leave_id_found}
+            })
+        elif "approve" in msg_lower and any(w in msg_lower for w in ["visitor", "guest", "pass"]):
+            intents.append({
+                "intent": "approve_visitor",
+                "entities": {"visitor_name": user_message}
+            })
+        elif "reject" in msg_lower and any(w in msg_lower for w in ["visitor", "guest", "pass"]):
+            intents.append({
+                "intent": "reject_visitor",
+                "entities": {"visitor_name": user_message}
+            })
+        elif any(w in msg_lower for w in ["resolve", "close", "fixed"]) and "complaint" in msg_lower:
+            intents.append({
+                "intent": "resolve_complaint",
+                "entities": {"complaint_id": cmp_id_found}
+            })
+
         # 1. Complaint Check
-        if any(w in msg_lower for w in ["light", "fan", "ac", "air condition", "water", "tap", "sink", "leak", "door", "bed", "chair", "table", "wifi", "internet", "broken", "not working", "clean", "dirty", "complaint", "repair", "fix"]):
+        if not intents and any(w in msg_lower for w in ["light", "fan", "ac", "air condition", "water", "tap", "sink", "leak", "door", "bed", "chair", "table", "wifi", "internet", "broken", "not working", "clean", "dirty", "complaint", "repair", "fix"]):
             category = "Other"
             priority = "Medium"
 

@@ -203,6 +203,18 @@ class TestSHMSSystem(unittest.TestCase):
         self.assertTrue(chat_res["success"])
         self.assertIn("report_agent", chat_res["agents_invoked"])
 
+    def test_13_warden_copilot_automation(self):
+        """Test Warden AI Copilot administrative prompts (batch approval & complaint resolution)."""
+        # 1. Batch approve leaves via natural language command
+        warden_res = decision_agent.process_chat("Approve all pending leave requests", student_id=1)
+        self.assertTrue(warden_res["success"])
+        self.assertIn("leave_agent", warden_res["agents_invoked"])
+
+        # 2. Resolve complaint via natural language command
+        cmp_res = decision_agent.process_chat("Resolve complaint CMP-2026-0001", student_id=1)
+        self.assertTrue(cmp_res["success"])
+        self.assertIn("complaint_agent", cmp_res["agents_invoked"])
+
 if __name__ == "__main__":
     unittest.main()
 

@@ -32,8 +32,19 @@ class ComplaintAgent:
         elif intent in ["get_complaint_status", "get_complaint"]:
             complaint_id = entities.get("complaint_id")
             return self.get_complaint(complaint_id, student_id)
-        elif intent == "list_complaints":
+        elif intent in ["list_complaints", "get_complaints"]:
             return self.list_complaints(student_id)
+        elif intent in ["resolve_complaint", "close_complaint"]:
+            complaint_id = entities.get("complaint_id")
+            if complaint_id:
+                return self.update_status(complaint_id, "Resolved")
+            return {"success": False, "agent": self.name, "data": {}, "message": "Please specify a Complaint ID (e.g., CMP-2026-0001) to resolve."}
+        elif intent in ["update_complaint_status", "change_complaint_status"]:
+            complaint_id = entities.get("complaint_id")
+            status = entities.get("status", "In Progress")
+            if complaint_id:
+                return self.update_status(complaint_id, status)
+            return {"success": False, "agent": self.name, "data": {}, "message": "Please specify a Complaint ID to update status."}
         else:
             return {
                 "success": False,

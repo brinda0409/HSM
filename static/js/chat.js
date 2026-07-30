@@ -95,6 +95,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const wardenAiInput = document.getElementById('wardenAiInput');
+    const wardenAiSendBtn = document.getElementById('wardenAiSendBtn');
+
     if (aiInput) {
         aiInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
@@ -108,10 +111,30 @@ document.addEventListener('DOMContentLoaded', () => {
         aiSendBtn.addEventListener('click', sendChatMessage);
     }
 
+    if (wardenAiInput) {
+        wardenAiInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendWardenChatMessage();
+            }
+        });
+    }
+
+    if (wardenAiSendBtn) {
+        wardenAiSendBtn.addEventListener('click', sendWardenChatMessage);
+    }
+
     window.sendQuickPrompt = (promptText) => {
         if (aiInput) {
             aiInput.value = promptText;
             sendChatMessage();
+        }
+    };
+
+    window.sendWardenQuickPrompt = (promptText) => {
+        if (wardenAiInput) {
+            wardenAiInput.value = promptText;
+            sendWardenChatMessage();
         }
     };
 
@@ -197,6 +220,97 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         scrollToBottom();
+    }
+
+    async function sendWardenChatMessage() {
+        const wardenInput = document.getElementById('wardenAiInput');
+        const wardenChatBox = document.getElementById('wardenAiChatBox');
+        if (!wardenInput || !wardenChatBox) return;
+
+        const text = wardenInput.value.trim();
+        if (!text) return;
+
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        // 1. Optimistic Bubble in Warden Chat Window
+        appendWardenChatBubble('user', text, timeStr);
+        wardenInput.value = '';
+
+        // Display Thinking Indicator
+        const typingElem = document.createElement('div');
+        typingElem.className = 'chat-msg agent';
+        typingElem.style.cssText = 'background: rgba(30, 41, 59, 0.8); color: #f8fafc; border: 1px solid rgba(255,255,255,0.1); padding: 0.6rem 0.8rem; border-radius: 8px; margin-bottom: 0.5rem; opacity: 0.85;';
+        typingElem.innerHTML = `
+            <div class="chat-meta" style="color: #34d399; font-weight: 800; font-size: 0.7rem;">Warden Copilot Executing...</div>
+            <div style="margin-top:0.3rem;" class="skeleton-text skeleton-dark"></div>
+        `;
+        wardenChatBox.appendChild(typingElem);
+        wardenChatBox.scrollTop = wardenChatBox.scrollHeight;
+
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: text,
+                    student_id: 1,
+                    role: "warden"
+                })
+            });
+
+            const data = await response.json();
+            typingElem.remove();
+
+            if (data.success) {
+                const agentsList = (data.agents_invoked || []).join(' + ') || 'Decision Agent';
+                const meta = `Warden Action via ${agentsList}`;
+                appendWardenChatBubble('agent', data.message, timeStr, meta);
+
+                showToast(`Warden Command Executed!`, "info");
+
+                // Automatically refresh Warden Dashboard tables to reflect new approvals/resolutions
+                if (window.loadDashboardData) {
+                    window.loadDashboardData();
+                }
+            } else {
+                appendWardenChatBubble('agent', `Notice: ${data.message || 'Unable to process command.'}`, timeStr, 'Execution Warning');
+            }
+        } catch (err) {
+            typingElem.remove();
+            appendWardenChatBubble('agent', `Network error executing warden command.`, timeStr, 'Connection Error');
+            showToast("Network error. Please check server connection.", "error");
+        }
+
+        wardenChatBox.scrollTop = wardenChatBox.scrollHeight;
+    }
+
+    function appendWardenChatBubble(sender, text, timestamp, meta = null) {
+        const wardenChatBox = document.getElementById('wardenAiChatBox');
+        if (!wardenChatBox) return;
+
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `chat-msg ${sender}`;
+        msgDiv.style.cssText = sender === 'user'
+            ? 'background: rgba(5, 150, 105, 0.25); color: white; border: 1px solid rgba(5, 150, 105, 0.4); padding: 0.6rem 0.8rem; border-radius: 8px; margin-bottom: 0.5rem;'
+            : 'background: rgba(30, 41, 59, 0.85); color: #f8fafc; border: 1px solid rgba(255,255,255,0.1); padding: 0.6rem 0.8rem; border-radius: 8px; margin-bottom: 0.5rem;';
+
+        if (meta) {
+            const metaDiv = document.createElement('div');
+            metaDiv.className = 'chat-meta';
+            metaDiv.style.cssText = 'color: #34d399; font-weight: 800; font-size: 0.7rem; margin-bottom: 0.2rem; display: flex; align-items: center; gap: 0.3rem;';
+            metaDiv.innerHTML = `
+                <svg class="svg-icon icon-sm" viewBox="0 0 24 24" style="stroke: #34d399;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <span>${meta}</span>
+            `;
+            msgDiv.appendChild(metaDiv);
+        }
+
+        const bodyDiv = document.createElement('div');
+        bodyDiv.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+        msgDiv.appendChild(bodyDiv);
+
+        wardenChatBox.appendChild(msgDiv);
+        wardenChatBox.scrollTop = wardenChatBox.scrollHeight;
     }
 
     function appendChatBubble(sender, text, timestamp, meta = null) {

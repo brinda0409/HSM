@@ -32,6 +32,22 @@ class VisitorAgent:
             return self.register_visitor(student_id, entities)
         elif intent in ["list_visitors", "get_visitors"]:
             return self.list_visitors(student_id)
+        elif intent in ["approve_visitor", "approve_visitor_pass"]:
+            visitor_id = entities.get("visitor_id")
+            if not visitor_id:
+                name = entities.get("visitor_name") or entities.get("name")
+                if name:
+                    row = query_one("SELECT visitor_id FROM visitors WHERE name LIKE ? AND status = 'Pending'", (f"%{name}%",))
+                    if row:
+                        visitor_id = row["visitor_id"]
+            if visitor_id:
+                return self.update_status(visitor_id, "Approved")
+            return {"success": False, "agent": self.name, "data": {}, "message": "Please specify a Visitor Pass ID or Name to approve."}
+        elif intent in ["reject_visitor", "reject_visitor_pass"]:
+            visitor_id = entities.get("visitor_id")
+            if visitor_id:
+                return self.update_status(visitor_id, "Rejected")
+            return {"success": False, "agent": self.name, "data": {}, "message": "Please specify a Visitor Pass ID to reject."}
         else:
             return {
                 "success": False,

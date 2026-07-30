@@ -24,9 +24,13 @@ class DecisionAgent:
             "register_complaint": complaint_agent,
             "get_complaint_status": complaint_agent,
             "list_complaints": complaint_agent,
+            "resolve_complaint": complaint_agent,
+            "update_complaint_status": complaint_agent,
 
             "register_visitor": visitor_agent,
             "list_visitors": visitor_agent,
+            "approve_visitor": visitor_agent,
+            "reject_visitor": visitor_agent,
 
             "get_room_info": room_agent,
             "allocate_room": room_agent,
@@ -38,6 +42,9 @@ class DecisionAgent:
             "apply_leave": leave_agent,
             "get_leave_status": leave_agent,
             "list_leaves": leave_agent,
+            "approve_leave": leave_agent,
+            "reject_leave": leave_agent,
+            "approve_all_leaves": leave_agent,
 
             "generate_report": report_agent,
             "get_report_summary": report_agent,

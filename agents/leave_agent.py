@@ -32,6 +32,23 @@ class LeaveAgent:
             return self.get_leave(leave_id, student_id)
         elif intent in ["list_leaves", "get_student_leaves"]:
             return self.list_leaves(student_id)
+        elif intent in ["approve_leave", "approve_leave_request"]:
+            leave_id = entities.get("leave_id")
+            if not leave_id:
+                target_student = entities.get("student_id")
+                latest = self.get_leave(student_id=target_student)
+                if latest.get("success") and latest.get("data"):
+                    leave_id = latest["data"].get("leave_id")
+            if leave_id:
+                return self.update_status(leave_id, "Approved")
+            return {"success": False, "agent": self.name, "data": {}, "message": "Please specify a Leave ID (e.g., LV-2026-0001) to approve."}
+        elif intent in ["reject_leave", "reject_leave_request"]:
+            leave_id = entities.get("leave_id")
+            if leave_id:
+                return self.update_status(leave_id, "Rejected")
+            return {"success": False, "agent": self.name, "data": {}, "message": "Please specify a Leave ID (e.g., LV-2026-0001) to reject."}
+        elif intent in ["approve_all_leaves", "approve_all_pending_leaves"]:
+            return self.approve_all_pending(entities)
         else:
             return {
                 "success": False,
@@ -156,5 +173,24 @@ class LeaveAgent:
             return {"success": True, "agent": self.name, "data": {"leave_id": leave_id, "status": status}, "message": f"Leave request {leave_id} updated to {status}."}
         else:
             return {"success": False, "agent": self.name, "data": {}, "message": f"Leave request {leave_id} not found."}
+
+    def approve_all_pending(self, entities={}):
+        """Batch approves all pending leave requests, optionally filtered by start_date."""
+        date_filter = entities.get("start_date") or entities.get("visit_date")
+        if date_filter:
+            rows = query_all("SELECT leave_id FROM leaves WHERE status = 'Pending' AND start_date = ?", (date_filter,))
+            execute_query("UPDATE leaves SET status = 'Approved' WHERE status = 'Pending' AND start_date = ?", (date_filter,))
+        else:
+            rows = query_all("SELECT leave_id FROM leaves WHERE status = 'Pending'")
+            execute_query("UPDATE leaves SET status = 'Approved' WHERE status = 'Pending'")
+
+        count = len(rows)
+        logger.info(f"[LeaveAgent] Batch approved {count} pending leave request(s).")
+        return {
+            "success": True,
+            "agent": self.name,
+            "data": {"approved_count": count},
+            "message": f"Successfully approved {count} pending leave application(s)!" if count > 0 else "No pending leave applications found to approve."
+        }
 
 leave_agent = LeaveAgent()
