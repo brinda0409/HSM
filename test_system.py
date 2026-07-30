@@ -6,6 +6,7 @@ from agents.visitor_agent import visitor_agent
 from agents.room_agent import room_agent
 from agents.info_agent import info_agent
 from agents.leave_agent import leave_agent
+from agents.report_agent import report_agent
 from agents.decision_agent import decision_agent
 from app import create_app
 
@@ -181,6 +182,26 @@ class TestSHMSSystem(unittest.TestCase):
         self.assertEqual(res_csv.status_code, 200)
         self.assertTrue(res_csv.json["success"])
         self.assertGreaterEqual(res_csv.json["created"], 2)
+
+    def test_12_report_agent(self):
+        """Test Report Agent summary compilation and decision routing."""
+        req = {
+            "intent": "generate_report",
+            "entities": {
+                "start_date": "2026-01-01",
+                "end_date": "2026-12-31",
+                "category": "all"
+            },
+            "student_id": 1
+        }
+        res = report_agent.process_request(req)
+        self.assertTrue(res["success"])
+        self.assertIn("pdf_download_url", res["data"])
+
+        # Decision Agent delegation test for report intent
+        chat_res = decision_agent.process_chat("Generate an administrative report for this week", student_id=1)
+        self.assertTrue(chat_res["success"])
+        self.assertIn("report_agent", chat_res["agents_invoked"])
 
 if __name__ == "__main__":
     unittest.main()

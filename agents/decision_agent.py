@@ -5,13 +5,14 @@ from agents.visitor_agent import visitor_agent
 from agents.room_agent import room_agent
 from agents.hostel_information_agent import hostel_information_agent
 from agents.leave_agent import leave_agent
+from agents.report_agent import report_agent
 from utils.logger import logger
 
 class DecisionAgent:
     """
     Decision Agent (Central Orchestrator):
     - Parses intent & entities from raw student messages via Gemini / Heuristic NLU.
-    - Routes requests to specialized worker agents (Complaint, Visitor, Room, Info, Leave).
+    - Routes requests to specialized worker agents (Complaint, Visitor, Room, Info, Leave, Report).
     - Merges results for compound / multi-intent requests.
     - Synthesizes friendly natural language response.
     - Logs execution audit trail in `chat_logs`.
@@ -36,7 +37,12 @@ class DecisionAgent:
 
             "apply_leave": leave_agent,
             "get_leave_status": leave_agent,
-            "list_leaves": leave_agent
+            "list_leaves": leave_agent,
+
+            "generate_report": report_agent,
+            "get_report_summary": report_agent,
+            "export_pdf_report": report_agent,
+            "get_report": report_agent
         }
 
     def process_chat(self, user_message, student_id=1):

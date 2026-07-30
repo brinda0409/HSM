@@ -50,7 +50,7 @@ Analyze the user's message and return a SINGLE JSON object with the following sc
 {{
   "intents": [
     {{
-      "intent": "register_complaint | get_complaint_status | register_visitor | get_room_info | allocate_room | transfer_room | apply_leave | get_leave_status | get_hostel_info | unknown",
+      "intent": "register_complaint | get_complaint_status | register_visitor | get_room_info | allocate_room | transfer_room | apply_leave | get_leave_status | get_hostel_info | generate_report | unknown",
       "category": "Electrical | Plumbing | Furniture | Internet | Cleanliness | Other",
       "entities": {{
          // complaint entities: description, category, priority (Low/Medium/High/Urgent)
@@ -58,6 +58,7 @@ Analyze the user's message and return a SINGLE JSON object with the following sc
          // room entities: room_no, to_room_no
          // leave entities: leave_type, start_date (YYYY-MM-DD), end_date (YYYY-MM-DD), reason
          // info entities: info_key, category, query_term
+         // report entities: start_date (YYYY-MM-DD), end_date (YYYY-MM-DD), category
          // complaint status entities: complaint_id
       }}
     }}
@@ -248,6 +249,17 @@ Respond ONLY with valid JSON inside ```json ``` block or raw JSON string. Do not
                 }
             })
 
+        # 6. Report Generation Check
+        if any(w in msg_lower for w in ["report", "pdf", "export report", "audit report", "summary report", "generate report", "download report"]):
+            intents.append({
+                "intent": "generate_report",
+                "entities": {
+                    "start_date": current_date_str,
+                    "end_date": current_date_str,
+                    "category": "all"
+                }
+            })
+
         # If no specific intent found
         if not intents:
             intents.append({
@@ -320,11 +332,14 @@ Response:
                 else:
                     responses.append(f"⚠️ Leave application error: {msg}")
 
-            elif agent == "info_agent":
+            elif agent in ["info_agent", "hostel_information_agent"]:
                 if success:
                     responses.append(f"ℹ️ **{data.get('title', 'Hostel Info')}**:\n{data.get('value')}")
                 else:
                     responses.append(f"ℹ️ {msg}")
+
+            elif agent == "report_agent":
+                responses.append(f"📊 {msg}")
 
             elif agent == "decision_agent":
                 responses.append(msg)
