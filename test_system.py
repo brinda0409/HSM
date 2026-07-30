@@ -1,5 +1,6 @@
 import os
 import unittest
+import io
 from services.db_service import init_db, query_one, query_all
 from agents.complaint_agent import complaint_agent
 from agents.visitor_agent import visitor_agent
@@ -70,7 +71,6 @@ class TestSHMSSystem(unittest.TestCase):
         self.assertTrue(res["success"])
         self.assertEqual(res["data"]["status"], "Pending")
 
-
     def test_04_room_agent(self):
         """Test room availability query and transfer."""
         res = room_agent.get_room(room_no="A-101")
@@ -121,12 +121,12 @@ class TestSHMSSystem(unittest.TestCase):
         # Chat API
         r_chat = self.client.post("/api/chat", json={"message": "What are today's mess timings?", "student_id": 1})
         self.assertEqual(r_chat.status_code, 200)
-        self.assertTrue(r_chat.json["success"])
+        self.assertTrue(r_chat.get_json()["success"])
 
         # Stats API
         r_stats = self.client.get("/api/dashboard/stats")
         self.assertEqual(r_stats.status_code, 200)
-        self.assertIn("open_complaints", r_stats.json["data"])
+        self.assertIn("open_complaints", r_stats.get_json()["data"])
 
         # Info API
         r_info = self.client.get("/api/info")
@@ -141,8 +141,6 @@ class TestSHMSSystem(unittest.TestCase):
 
     def test_11_student_crud_and_csv_upload(self):
         """Test Student CRUD endpoints and CSV Dataset upload."""
-        import io
-
         # 1. Create Student
         new_student = {
             "name": "Test Student",
@@ -154,12 +152,12 @@ class TestSHMSSystem(unittest.TestCase):
         }
         res_create = self.client.post("/api/students", json=new_student)
         self.assertEqual(res_create.status_code, 201)
-        st_id = res_create.json["student_id"]
+        st_id = res_create.get_json()["student_id"]
 
         # 2. Get Student
         res_get = self.client.get(f"/api/students/{st_id}")
         self.assertEqual(res_get.status_code, 200)
-        self.assertEqual(res_get.json["data"]["name"], "Test Student")
+        self.assertEqual(res_get.get_json()["data"]["name"], "Test Student")
 
         # 3. Update Student
         res_upd = self.client.put(f"/api/students/{st_id}", json={"name": "Updated Test Student", "contact": "+91-8888800000"})
@@ -180,8 +178,8 @@ class TestSHMSSystem(unittest.TestCase):
         }
         res_csv = self.client.post('/api/students/upload-csv', data=data, content_type='multipart/form-data')
         self.assertEqual(res_csv.status_code, 200)
-        self.assertTrue(res_csv.json["success"])
-        self.assertGreaterEqual(res_csv.json["created"], 2)
+        self.assertTrue(res_csv.get_json()["success"])
+        self.assertGreaterEqual(res_csv.get_json()["created"], 2)
 
     def test_12_report_agent(self):
         """Test Report Agent summary compilation and decision routing."""
@@ -205,17 +203,21 @@ class TestSHMSSystem(unittest.TestCase):
 
     def test_13_warden_copilot_automation(self):
         """Test Warden AI Copilot administrative prompts (batch approval & complaint resolution)."""
-        # 1. Batch approve leaves via natural language command
         warden_res = decision_agent.process_chat("Approve all pending leave requests", student_id=1)
         self.assertTrue(warden_res["success"])
         self.assertIn("leave_agent", warden_res["agents_invoked"])
 
-        # 2. Resolve complaint via natural language command
-        cmp_res = decision_agent.process_chat("Resolve complaint CMP-2026-0001", student_id=1)
-        self.assertTrue(cmp_res["success"])
-        self.assertIn("complaint_agent", cmp_res["agents_invoked"])
+        res_res = self.client.post("/api/chat", json={"message": "Resolve complaint CMP-2026-0001", "student_id": 1, "role": "warden"})
+        self.assertEqual(res_res.status_code, 200)
+        self.assertIn("complaint_agent", res_res.get_json()["agents_invoked"])
+
+    def test_14_room_availability_query(self):
+        """Test asking 'how many rooms are available' in chat."""
+        r_chat = self.client.post("/api/chat", json={"message": "how many rooms are available", "student_id": 1})
+        self.assertEqual(r_chat.status_code, 200)
+        self.assertTrue(r_chat.get_json()["success"])
+        self.assertIn("room_agent", r_chat.get_json()["agents_invoked"])
+        self.assertIn("Room Vacancy Report", r_chat.get_json()["message"])
 
 if __name__ == "__main__":
     unittest.main()
-
-

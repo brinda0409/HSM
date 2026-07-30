@@ -33,6 +33,8 @@ class DecisionAgent:
             "reject_visitor": visitor_agent,
 
             "get_room_info": room_agent,
+            "check_availability": room_agent,
+            "empty_rooms": room_agent,
             "allocate_room": room_agent,
             "transfer_room": room_agent,
             "list_rooms": room_agent,
