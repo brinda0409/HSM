@@ -123,31 +123,35 @@ class DecisionAgent:
         # Step 3: Merge responses and synthesize response
         synthesized_text = gemini_service.synthesize_response(user_message, agent_results)
 
-        # Step 4: Build Decision Agent Multi-Agent Execution Explanation
-        intents_formatted = ", ".join([f"`{i}`" for i in detected_intent_names])
-        agents_formatted = ", ".join([f"`{a}`" for a in agents_invoked])
+        # Step 4: Build Decision Agent Multi-Agent Execution Flow Diagram
+        intents_formatted = ", ".join([f"**{i}**" for i in detected_intent_names])
+        agents_formatted = ", ".join([f"**{a}**" for a in agents_invoked])
 
         if len(agents_invoked) > 1:
-            reasoning = f"Multiple distinct intents detected ({intents_formatted}) — routed in parallel to specialized worker agents."
+            reasoning = f"Multiple intents detected ({intents_formatted}) — query partitioned and delegated concurrently across worker agents."
         else:
             first_intent = detected_intent_names[0] if detected_intent_names else "general_query"
             first_agent = agents_invoked[0] if agents_invoked else "decision_agent"
-            reasoning = f"Intent `{first_intent}` identified and delegated to `{first_agent}` for database execution."
+            reasoning = f"Single intent **{first_intent}** recognized — routed to **{first_agent}** for execution."
 
-        # Attach Decision Agent Multi-Agent Workflow Header if not already present
-        if "Decision Agent" not in synthesized_text:
-            workflow_header = (
-                f"🧠 **Decision Agent (Central AI Brain Orchestrator)**\n\n"
-                f"🔄 **Multi-Agent Orchestration Workflow**:\n"
-                f"• 👤 **Student Query**: *\"{user_message}\"*\n"
-                f"• 🎯 **Detected Intent(s)**: {intents_formatted}\n"
-                f"• 🤖 **Selected Agent(s)**: {agents_formatted}\n"
-                f"• 💡 **Routing Rationale**: {reasoning}\n\n"
-                f"---\n\n"
-            )
-            final_response_text = workflow_header + synthesized_text
-        else:
+        # If a single worker agent like leave_agent or complaint_agent already output its own card, output clean workflow
+        if len(agents_invoked) == 1 and ("Autonomous" in synthesized_text or "Pipeline" in synthesized_text):
             final_response_text = synthesized_text
+        else:
+            workflow_diagram = (
+                f"🧠 **Decision Agent (Central AI Brain)**\n\n"
+                f"📥 **Student Query**\n*\"{user_message}\"*\n"
+                f"↓\n"
+                f"🎯 **Detected Intents**\n{intents_formatted}\n"
+                f"↓\n"
+                f"🤖 **Agents Selected**\n{agents_formatted}\n"
+                f"↓\n"
+                f"💡 **Routing Rationale**\n{reasoning}\n"
+                f"↓\n"
+                f"🏁 **Final AI Response**:\n"
+                f"{synthesized_text}"
+            )
+            final_response_text = workflow_diagram
 
         # Step 5: Audit Logging into Database `chat_logs`
         try:
