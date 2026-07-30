@@ -28,7 +28,17 @@ INSERT OR IGNORE INTO students (student_id, name, roll_no, room_id, contact, ema
 (7, 'Emily Davis', 'EE2024-009', 4, '+1-555-0107', 'emily.d@hostel.edu', 'password123'),
 (8, 'Arjun Verma', 'CS2024-088', 6, '+1-555-0108', 'arjun.v@hostel.edu', 'password123'),
 (9, 'Karan Malhotra', 'CS2024-089', 6, '+1-555-0109', 'karan.m@hostel.edu', 'password123'),
-(10, 'Ananya Sen', 'EC2024-099', 7, '+1-555-0110', 'ananya.s@hostel.edu', 'password123');
+(10, 'Ananya Sen', 'EC2024-099', 7, '+1-555-0110', 'ananya.s@hostel.edu', 'password123'),
+(11, 'Siddharth Rao', 'CS2024-101', 5, '+1-555-0111', 'siddharth.r@hostel.edu', 'password123'),
+(12, 'Rohan Kapoor', 'ME2024-102', 5, '+1-555-0112', 'rohan.k@hostel.edu', 'password123'),
+(13, 'Kavya Reddy', 'EC2024-103', 7, '+1-555-0113', 'kavya.r@hostel.edu', 'password123'),
+(14, 'Vikram Singh', 'CS2024-104', 8, '+1-555-0114', 'vikram.s@hostel.edu', 'password123'),
+(15, 'Aditi Nair', 'EE2024-105', 8, '+1-555-0115', 'aditi.n@hostel.edu', 'password123'),
+(16, 'Nikhil Joshi', 'ME2024-106', 9, '+1-555-0116', 'nikhil.j@hostel.edu', 'password123'),
+(17, 'Tarun Verma', 'CS2024-107', 9, '+1-555-0117', 'tarun.v@hostel.edu', 'password123'),
+(18, 'Pooja Sharma', 'EC2024-108', 10, '+1-555-0118', 'pooja.s@hostel.edu', 'password123'),
+(19, 'Rishi Kumar', 'EE2024-109', 10, '+1-555-0119', 'rishi.k@hostel.edu', 'password123'),
+(20, 'Meera Deshmukh', 'CS2024-110', 11, '+1-555-0120', 'meera.d@hostel.edu', 'password123');
 
 -- 3. Insert Wardens (with warden@hostel.edu / password123 credentials)
 INSERT OR IGNORE INTO wardens (warden_id, name, contact, email, password, block_assigned, office_hours) VALUES
