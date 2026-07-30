@@ -453,25 +453,48 @@
                         </div>
                     </div>
 
-                    <!-- Tab 2: Leaves Table -->
+                    <!-- Tab 2: Leaves Table & AI Intelligence Dashboard -->
                     <div id="tab-leaves" class="tab-content" style="display: none;">
+                        <!-- AI Insights Metric Strip -->
+                        <div id="leaveAiInsightsContainer" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.25rem;">
+                            <div class="hero-stats-card" style="padding: 1rem; background: #ecfdf5; border: 1px solid #a7f3d0;">
+                                <div style="font-size:0.75rem; font-weight:700; color:#047857;">RECOMMENDED APPROVALS</div>
+                                <h3 id="statAiApprovals" style="font-size:1.6rem; font-weight:800; color:#065f46; margin-top:0.2rem;">0</h3>
+                                <span style="font-size:0.7rem; color:#047857; font-weight:700;">Low Risk (Confidence 96%+)</span>
+                            </div>
+                            <div class="hero-stats-card" style="padding: 1rem; background: #fffbeb; border: 1px solid #fde68a;">
+                                <div style="font-size:0.75rem; font-weight:700; color:#b45309;">MANUAL REVIEWS NEEDED</div>
+                                <h3 id="statAiReviews" style="font-size:1.6rem; font-weight:800; color:#92400e; margin-top:0.2rem;">0</h3>
+                                <span style="font-size:0.7rem; color:#b45309; font-weight:700;">Requires Warden Verification</span>
+                            </div>
+                            <div class="hero-stats-card" style="padding: 1rem; background: #fef2f2; border: 1px solid #fca5a5;">
+                                <div style="font-size:0.75rem; font-weight:700; color:#b91c1c;">HIGH RISK REQUESTS</div>
+                                <h3 id="statAiHighRisk" style="font-size:1.6rem; font-weight:800; color:#991b1b; margin-top:0.2rem;">0</h3>
+                                <span style="font-size:0.7rem; color:#b91c1c; font-weight:700;">Policy Flags & Overstays</span>
+                            </div>
+                            <div class="hero-stats-card" style="padding: 1rem; background: #eff6ff; border: 1px solid #bfdbfe;">
+                                <div style="font-size:0.75rem; font-weight:700; color:#1d4ed8;">HOSTEL LEAVE TRENDS</div>
+                                <h3 id="statAiTrend" style="font-size:1.1rem; font-weight:800; color:#1e40af; margin-top:0.2rem;">+28% Weekend</h3>
+                                <span style="font-size:0.7rem; color:#1d4ed8; font-weight:700;">Avg Duration: 2.4 Days</span>
+                            </div>
+                        </div>
+
                         <div class="table-container">
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Leave ID</th>
-                                        <th>Student</th>
-                                        <th>Room</th>
-                                        <th>Leave Type</th>
-                                        <th>Start Date</th>
-                                        <th>End Date</th>
-                                        <th>Reason</th>
+                                        <th>Leave ID & AI Risk</th>
+                                        <th>Student Context</th>
+                                        <th>Leave Details</th>
+                                        <th>Dates & Duration</th>
+                                        <th>AI Policy & Conflict Check</th>
+                                        <th>AI Recommendation</th>
                                         <th>Status</th>
-                                        <th>Actions</th>
+                                        <th>Warden Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="leavesTableBody">
-                                    <tr><td colspan="9"><div class="skeleton-row skeleton"></div></td></tr>
+                                    <tr><td colspan="8"><div class="skeleton-row skeleton"></div></td></tr>
                                 </tbody>
                             </table>
                         </div>

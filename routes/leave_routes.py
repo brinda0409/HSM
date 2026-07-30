@@ -18,13 +18,18 @@ def apply_leave():
     status_code = 201 if res.get("success") else 400
     return jsonify(res), status_code
 
+@leave_bp.route("/api/leaves/insights", methods=["GET"])
+def get_leave_insights():
+    """GET /api/leaves/insights - Warden AI Dashboard Intelligence."""
+    res = leave_agent.get_warden_insights()
+    return jsonify(res), 200
+
 @leave_bp.route("/api/leaves/<student_id>", methods=["GET"])
 def get_student_leaves(student_id):
     """GET /api/leaves/<student_id> - List leaves for a specific student."""
     if str(student_id).isdigit():
         res = leave_agent.list_leaves(student_id=int(student_id))
     else:
-        # if leave_id like LV-2026-0001 was passed
         res = leave_agent.get_leave(leave_id=student_id)
     return jsonify(res), 200
 
