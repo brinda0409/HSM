@@ -73,49 +73,63 @@ document.addEventListener('DOMContentLoaded', () => {
     checkAuthSession();
 
     async function checkAuthSession() {
+        let u = null;
+
         try {
             const res = await fetch('/api/me');
             const data = await res.json();
-            if (data.success && data.user) {
-                const u = data.user;
-                const studentNavGroup = document.getElementById('sidebarStudentNavGroup');
-                const wardenNavGroup = document.getElementById('sidebarWardenNavGroup');
-                const roleSwitcher = document.getElementById('topbarRoleSwitcher');
-                const studentSelectWrap = document.getElementById('studentSelectWrap');
-
-                if (u.role === 'warden') {
-                    // Strictly isolate Warden view: Hide student navigation
-                    if (studentNavGroup) studentNavGroup.style.display = 'none';
-                    if (wardenNavGroup) wardenNavGroup.style.display = 'block';
-                    if (roleSwitcher) roleSwitcher.style.display = 'none';
-                    if (studentSelectWrap) studentSelectWrap.style.display = 'none';
-
-                    document.getElementById('topAuthText').textContent = `WARDEN: ${u.name.toUpperCase()}`;
-                    switchMainView('warden');
-                } else if (u.role === 'student') {
-                    window.currentStudentId = u.id;
-                    // Strictly isolate Student view: Hide warden navigation
-                    if (studentNavGroup) studentNavGroup.style.display = 'block';
-                    if (wardenNavGroup) wardenNavGroup.style.display = 'none';
-                    if (roleSwitcher) roleSwitcher.style.display = 'none';
-                    if (studentSelectWrap) studentSelectWrap.style.display = 'none';
-
-                    if (studentSelect) studentSelect.value = u.id;
-                    const nameElem = document.getElementById('studentName');
-                    const cardNameElem = document.getElementById('cardStudentName');
-                    const avatarElem = document.getElementById('userAvatar');
-                    const topAuthText = document.getElementById('topAuthText');
-
-                    if (nameElem) nameElem.textContent = u.name;
-                    if (cardNameElem) cardNameElem.textContent = u.name;
-                    if (avatarElem) avatarElem.textContent = u.name.charAt(0);
-                    if (topAuthText) topAuthText.textContent = `RESIDENT: ${u.name.toUpperCase()}`;
-
-                    switchMainView('student');
-                }
+            if (data.success && data.user && !data.is_demo) {
+                u = data.user;
             }
         } catch (e) {
             console.error('Session check error:', e);
+        }
+
+        // Fallback to localStorage saved user if session is demo or empty
+        if (!u) {
+            const stored = localStorage.getItem('shms_user');
+            if (stored) {
+                try { u = JSON.parse(stored); } catch(err){}
+            }
+        }
+
+        if (u) {
+            const studentNavGroup = document.getElementById('sidebarStudentNavGroup');
+            const wardenNavGroup = document.getElementById('sidebarWardenNavGroup');
+            const roleSwitcher = document.getElementById('topbarRoleSwitcher');
+            const studentSelectWrap = document.getElementById('studentSelectWrap');
+
+            if (u.role === 'warden') {
+                // Strictly isolate Warden view: Hide student navigation
+                if (studentNavGroup) studentNavGroup.style.display = 'none';
+                if (wardenNavGroup) wardenNavGroup.style.display = 'block';
+                if (roleSwitcher) roleSwitcher.style.display = 'none';
+                if (studentSelectWrap) studentSelectWrap.style.display = 'none';
+
+                const topAuthText = document.getElementById('topAuthText');
+                if (topAuthText) topAuthText.textContent = `WARDEN: ${u.name.toUpperCase()}`;
+                switchMainView('warden');
+            } else if (u.role === 'student') {
+                window.currentStudentId = u.id;
+                // Strictly isolate Student view: Hide warden navigation
+                if (studentNavGroup) studentNavGroup.style.display = 'block';
+                if (wardenNavGroup) wardenNavGroup.style.display = 'none';
+                if (roleSwitcher) roleSwitcher.style.display = 'none';
+                if (studentSelectWrap) studentSelectWrap.style.display = 'none';
+
+                if (studentSelect) studentSelect.value = u.id;
+                const nameElem = document.getElementById('studentName');
+                const cardNameElem = document.getElementById('cardStudentName');
+                const avatarElem = document.getElementById('userAvatar');
+                const topAuthText = document.getElementById('topAuthText');
+
+                if (nameElem) nameElem.textContent = u.name;
+                if (cardNameElem) cardNameElem.textContent = u.name;
+                if (avatarElem) avatarElem.textContent = u.name.charAt(0);
+                if (topAuthText) topAuthText.textContent = `RESIDENT: ${u.name.toUpperCase()}`;
+
+                switchMainView('student');
+            }
         }
     }
 
