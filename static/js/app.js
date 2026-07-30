@@ -1426,6 +1426,95 @@ document.addEventListener('DOMContentLoaded', () => {
             if (btn) btn.disabled = false;
         }
     };
+
+    // ==================== WARDEN FLOATING AI CHATBOT WIDGET ====================
+    window.toggleWardenChatWidget = () => {
+        const drawer = document.getElementById('wardenChatDrawer');
+        if (!drawer) return;
+        if (drawer.style.display === 'none' || drawer.style.display === '') {
+            drawer.style.display = 'flex';
+            const input = document.getElementById('wardenAiInput');
+            if (input) input.focus();
+        } else {
+            drawer.style.display = 'none';
+        }
+    };
+
+    window.sendWardenQuickPrompt = (promptText) => {
+        const input = document.getElementById('wardenAiInput');
+        if (input) {
+            input.value = promptText;
+            window.sendWardenChatMessage();
+        }
+    };
+
+    window.sendWardenChatMessage = async () => {
+        const input = document.getElementById('wardenAiInput');
+        const chatBox = document.getElementById('wardenAiChatBox');
+        if (!input || !chatBox) return;
+
+        const text = input.value.trim();
+        if (!text) return;
+
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        // User message bubble
+        const uBubble = document.createElement('div');
+        uBubble.className = 'chat-msg user';
+        uBubble.style.cssText = 'background: rgba(5, 150, 105, 0.25); color: white; border: 1px solid rgba(5, 150, 105, 0.4); padding: 0.6rem 0.8rem; border-radius: 8px; font-size: 0.82rem; margin-bottom: 0.5rem;';
+        uBubble.textContent = text;
+        chatBox.appendChild(uBubble);
+
+        input.value = '';
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // Thinking indicator
+        const typingElem = document.createElement('div');
+        typingElem.className = 'chat-msg agent';
+        typingElem.style.cssText = 'background: rgba(30, 41, 59, 0.8); color: #f8fafc; border: 1px solid rgba(255,255,255,0.1); padding: 0.6rem 0.8rem; border-radius: 8px; font-size: 0.82rem; margin-bottom: 0.5rem; opacity: 0.85;';
+        typingElem.innerHTML = `
+            <div style="color: #34d399; font-weight: 800; font-size: 0.68rem;">Warden Copilot Executing...</div>
+            <div style="margin-top:0.3rem;" class="skeleton-text skeleton-dark"></div>
+        `;
+        chatBox.appendChild(typingElem);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        try {
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: text,
+                    student_id: 1,
+                    role: 'warden'
+                })
+            });
+            const data = await res.json();
+            typingElem.remove();
+
+            const aBubble = document.createElement('div');
+            aBubble.className = 'chat-msg agent';
+            aBubble.style.cssText = 'background: rgba(30, 41, 59, 0.85); color: #f8fafc; border: 1px solid rgba(255,255,255,0.1); padding: 0.6rem 0.8rem; border-radius: 8px; font-size: 0.82rem; margin-bottom: 0.5rem;';
+
+            if (data.success) {
+                const agents = (data.agents_invoked || []).join(' + ') || 'Decision Agent';
+                aBubble.innerHTML = `
+                    <div style="color: #34d399; font-weight: 800; font-size: 0.68rem; margin-bottom: 0.2rem;">⚡ Action Executed via ${agents}</div>
+                    <div>${data.message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')}</div>
+                `;
+                showToast('Warden Command Executed!', 'success');
+                appCache.invalidate();
+                loadWardenDashboardData();
+            } else {
+                aBubble.innerHTML = `<div style="color: #ef4444; font-weight:700;">Notice: ${data.message}</div>`;
+            }
+            chatBox.appendChild(aBubble);
+        } catch (e) {
+            typingElem.remove();
+            showToast('Network error executing warden command', 'error');
+        }
+        chatBox.scrollTop = chatBox.scrollHeight;
+    };
 });
 
 
