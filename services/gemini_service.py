@@ -13,7 +13,7 @@ except ImportError:
 
 class GeminiService:
     def __init__(self):
-        self.api_key = os.getenv("GEMINI_API_KEY")
+        self.api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI") or os.getenv("gemini")
         self.model = None
         if HAS_GENAI and self.api_key:
             try:
