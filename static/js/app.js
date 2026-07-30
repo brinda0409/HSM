@@ -93,6 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('topAuthText').textContent = `WARDEN: ${u.name.toUpperCase()}`;
                     switchMainView('warden');
                 } else if (u.role === 'student') {
+                    window.currentStudentId = u.id;
                     // Strictly isolate Student view: Hide warden navigation
                     if (studentNavGroup) studentNavGroup.style.display = 'block';
                     if (wardenNavGroup) wardenNavGroup.style.display = 'none';
@@ -117,6 +118,11 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Session check error:', e);
         }
     }
+
+    function getStudentId() {
+        return window.currentStudentId || parseInt(studentSelect ? studentSelect.value : 1, 10) || 1;
+    }
+
 
     // 1. Single-Link View Switching Engine
     window.switchMainView = (mode, targetTab = null, linkElem = null) => {
@@ -168,12 +174,14 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('sidebarProfileTitle').textContent = 'WARDEN PORTAL';
             document.getElementById('sidebarProfileSub').textContent = 'Administrator';
 
+            appCache.invalidate(); // Invalidate cache so Warden always sees live student requests!
             if (targetTab) switchWardenTab(targetTab);
             else switchWardenTab('complaints');
 
             loadWardenDashboardData();
         }
     };
+
 
     window.switchWardenTab = (tabName) => {
         const tabBtns = document.querySelectorAll('.tab-btn');
@@ -266,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // STUDENT PORTAL ENGINE
     // -------------------------------------------------------------
     async function loadStudentPortalData(skipSkeleton = false) {
-        const sId = parseInt(studentSelect ? studentSelect.value : 1, 10) || 1;
+        const sId = getStudentId();
         const listContainer = document.getElementById('complaintItemsList');
         if (!listContainer) return;
 
@@ -330,8 +338,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const text = aiInput.value.trim();
         if (!text) return;
 
-        const sId = parseInt(studentSelect ? studentSelect.value : 1, 10) || 1;
+        const sId = getStudentId();
         const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
 
         // Optimistic UI updates
         appendChatBubble('user', text, timeStr);
@@ -473,9 +482,11 @@ document.addEventListener('DOMContentLoaded', () => {
             fetchWardenLeaves(),
             fetchWardenVisitors(),
             fetchWardenRooms(),
-            fetchWardenAuditLogs()
+            fetchWardenAuditLogs(),
+            fetchWardenStudents()
         ]);
     }
+
 
     async function fetchWardenStats() {
         const cached = appCache.get('warden_stats');
@@ -641,13 +652,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderWardenVisitorsTable(visitors) {
         const tbody = document.getElementById('visitorsTableBody');
+        if (!tbody) return;
         tbody.innerHTML = '';
         if (visitors.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#94a3b8; padding:1rem;">No visitor logs found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:#94a3b8; padding:1rem;">No visitor logs found.</td></tr>';
             return;
         }
         visitors.forEach(v => {
             const tr = document.createElement('tr');
+            tr.id = `row-visitor-${v.visitor_id}`;
+            const statusStr = v.status || 'Pending';
+            let badgeStyle = 'badge-priority-low';
+            if (statusStr === 'Approved') badgeStyle = 'badge-approved';
+            else if (statusStr === 'Rejected') badgeStyle = 'badge-rejected';
+            else if (statusStr === 'Pending') badgeStyle = 'badge-priority-medium';
+
+            const actionsHtml = statusStr === 'Pending' ? `
+                <button class="btn-action btn-approve" onclick="updateVisitorStatus(${v.visitor_id}, 'Approved')" data-tooltip="Approve visitor pass">Approve</button>
+                <button class="btn-action btn-reject" onclick="updateVisitorStatus(${v.visitor_id}, 'Rejected')" data-tooltip="Reject visitor pass">Reject</button>
+            ` : `<span style="color:var(--text-secondary); font-size:0.8rem;">Decided</span>`;
+
             tr.innerHTML = `
                 <td>#${v.visitor_id}</td>
                 <td><strong>${v.name}</strong></td>
@@ -657,11 +681,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${v.visit_date}</td>
                 <td>${v.visit_time}</td>
                 <td>${v.purpose}</td>
-                <td><span class="badge badge-approved">${v.status}</span></td>
+                <td><span class="badge ${badgeStyle}">${statusStr}</span></td>
+                <td>${actionsHtml}</td>
             `;
             tbody.appendChild(tr);
         });
     }
+
+    window.updateVisitorStatus = async (visitorId, status) => {
+        try {
+            const res = await fetch(`/api/visitors/${visitorId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            });
+            const result = await res.json();
+            if (result.success) {
+                showToast(`Visitor pass #${visitorId} updated to ${status}`, 'success');
+                appCache.invalidate();
+                fetchWardenVisitors();
+                loadWardenDashboardData();
+            } else {
+                showToast(`Error: ${result.message}`, 'error');
+            }
+        } catch (e) {
+            showToast('Network error updating visitor status', 'error');
+        }
+    };
+
 
     async function fetchWardenRooms() {
         const tbody = document.getElementById('roomsTableBody');
@@ -820,4 +867,560 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast('Network error updating leave status', 'error');
         }
     };
+
+    // ==================== REPORT GENERATOR & PDF DOWNLOAD ====================
+    window.openReportModal = () => {
+        const modal = document.getElementById('reportModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            window.setReportDateShortcut('30days');
+        }
+    };
+
+    window.closeReportModal = () => {
+        const modal = document.getElementById('reportModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    };
+
+    window.setReportDateShortcut = (range) => {
+        const today = new Date();
+        const formatDate = (d) => {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
+        const startInput = document.getElementById('reportStartDate');
+        const endInput = document.getElementById('reportEndDate');
+
+        if (!startInput || !endInput) return;
+
+        // Update active shortcut button UI
+        document.querySelectorAll('#reportModal .btn-shortcut').forEach(btn => btn.classList.remove('active'));
+        if (window.event && window.event.target && window.event.target.classList && window.event.target.classList.contains('btn-shortcut')) {
+            window.event.target.classList.add('active');
+        }
+
+        if (range === 'today') {
+            const todayStr = formatDate(today);
+            startInput.value = todayStr;
+            endInput.value = todayStr;
+        } else if (range === '7days') {
+            const startDate = new Date();
+            startDate.setDate(today.getDate() - 7);
+            startInput.value = formatDate(startDate);
+            endInput.value = formatDate(today);
+        } else if (range === '30days') {
+            const startDate = new Date();
+            startDate.setDate(today.getDate() - 30);
+            startInput.value = formatDate(startDate);
+            endInput.value = formatDate(today);
+        } else if (range === 'month') {
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            startInput.value = formatDate(firstDay);
+            endInput.value = formatDate(today);
+        } else if (range === 'all') {
+            startInput.value = '2020-01-01';
+            endInput.value = formatDate(today);
+        }
+    };
+
+    window.downloadPdfReport = async () => {
+        const startDate = document.getElementById('reportStartDate').value;
+        const endDate = document.getElementById('reportEndDate').value;
+        const category = document.getElementById('reportCategory').value;
+
+        if (!startDate || !endDate) {
+            showToast('Please select both Start Date and End Date.', 'warning');
+            return;
+        }
+
+        if (startDate > endDate) {
+            showToast('Start Date cannot be after End Date.', 'warning');
+            return;
+        }
+
+        const btn = document.getElementById('btnDownloadPdf');
+        const btnText = document.getElementById('btnDownloadPdfText');
+        const originalText = btnText ? btnText.textContent : 'Download PDF';
+
+        if (btn) btn.disabled = true;
+        if (btnText) btnText.textContent = 'Generating PDF...';
+
+        showToast('Preparing your PDF report...', 'info');
+
+        try {
+            const url = `/api/reports/download-pdf?start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}&category=${encodeURIComponent(category)}`;
+            
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Server returned status ${response.status}`);
+            }
+
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = downloadUrl;
+            a.download = `SmartHostel_Report_${startDate}_to_${endDate}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(downloadUrl);
+            a.remove();
+
+            showToast('PDF Report downloaded successfully!', 'success');
+            closeReportModal();
+        } catch (error) {
+            console.error('PDF Download Error:', error);
+            showToast(`Failed to generate PDF report: ${error.message}`, 'error');
+        } finally {
+            if (btn) btn.disabled = false;
+            if (btnText) btnText.textContent = originalText;
+        }
+    };
+
+    // ==================== STUDENT DIRECTORY & CSV BULK IMPORT ====================
+    let allWardenStudents = [];
+
+    async function fetchWardenStudents() {
+        const tbody = document.getElementById('studentsTableBody');
+        if (!tbody) return;
+
+        const cached = appCache.get('warden_students');
+        if (cached) {
+            allWardenStudents = cached;
+            renderWardenStudentsTable(allWardenStudents);
+            return;
+        }
+
+        renderTableSkeleton('studentsTableBody', 7, 3);
+        try {
+            const res = await fetch('/api/students');
+            const result = await res.json();
+            if (result.success && result.data) {
+                allWardenStudents = result.data;
+                appCache.set('warden_students', allWardenStudents);
+                renderWardenStudentsTable(allWardenStudents);
+            }
+        } catch (e) {
+            console.error('Error fetching students:', e);
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ef4444; padding:1rem;">Failed to load student directory.</td></tr>';
+        }
+    }
+    function renderWardenStudentsTable(students) {
+        const tbody = document.getElementById('studentsTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        if (!students || students.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#94a3b8; padding:1.2rem;">No student records found. Click "+ Add Student" or "Upload CSV Dataset" to import.</td></tr>';
+            return;
+        }
+
+        students.forEach(s => {
+            const tr = document.createElement('tr');
+            tr.id = `row-student-${s.student_id}`;
+            const roomDisplay = s.room_no ? `<span class="badge badge-approved">Room ${s.room_no} (${s.block || 'Block A'})</span>` : `<span class="badge badge-priority-low">Unallocated</span>`;
+            const statusStr = s.status || 'Active';
+            const isSuspended = statusStr === 'Suspended';
+            const statusBadge = isSuspended ? 
+                `<span class="badge badge-rejected" style="background:#fef2f2; color:#dc2626; border:1px solid #fca5a5;">Suspended</span>` : 
+                `<span class="badge badge-approved" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0;">Active</span>`;
+
+            const safeName = (s.name || '').replace(/'/g, "\\'");
+            
+            const suspendBtn = isSuspended ?
+                `<button type="button" class="btn-action" onclick="toggleStudentStatus(${s.student_id}, 'Active')" style="background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0;" data-tooltip="Reactivate student account">Activate</button>` :
+                `<button type="button" class="btn-action" onclick="toggleStudentStatus(${s.student_id}, 'Suspended')" style="background: #fffbeb; color: #d97706; border: 1px solid #fde68a;" data-tooltip="Suspend student account">Suspend</button>`;
+
+            tr.innerHTML = `
+                <td>#${s.student_id}</td>
+                <td><span class="badge badge-in-progress">${s.roll_no}</span></td>
+                <td><strong>${s.name}</strong></td>
+                <td>${s.email}</td>
+                <td>${s.contact}</td>
+                <td>${roomDisplay}</td>
+                <td>${statusBadge}</td>
+                <td>
+                    <div style="display: flex; gap: 0.4rem;">
+                        ${suspendBtn}
+                        <button type="button" class="btn-action" onclick="openEditStudentModal(${s.student_id})" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;" data-tooltip="Manage student room/status">Manage</button>
+                        <button type="button" class="btn-action btn-reject" onclick="confirmDeleteStudent(${s.student_id}, '${safeName}')" data-tooltip="Remove student record">Remove</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    window.toggleStudentStatus = async (studentId, newStatus) => {
+        try {
+            const res = await fetch(`/api/students/${studentId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            });
+            const result = await res.json();
+            if (result.success) {
+                showToast(`Student status updated to ${newStatus}`, 'info');
+                appCache.invalidate();
+                fetchWardenStudents();
+            } else {
+                showToast(`Failed: ${result.message}`, 'error');
+            }
+        } catch (e) {
+            showToast('Network error updating student status', 'error');
+        }
+    };
+
+    window.filterStudentsTable = () => {
+        const query = (document.getElementById('studentSearchInput')?.value || '').toLowerCase();
+        if (!query) {
+            renderWardenStudentsTable(allWardenStudents);
+            return;
+        }
+        const filtered = allWardenStudents.filter(s => 
+            (s.name || '').toLowerCase().includes(query) ||
+            (s.roll_no || '').toLowerCase().includes(query) ||
+            (s.email || '').toLowerCase().includes(query) ||
+            (s.contact || '').toLowerCase().includes(query) ||
+            (s.room_no || '').toLowerCase().includes(query)
+        );
+        renderWardenStudentsTable(filtered);
+    };
+
+    async function populateStudentRoomOptions(selectedRoomId = null) {
+        const select = document.getElementById('studentRoomSelect');
+        if (!select) return;
+        select.innerHTML = '<option value="">-- No Room Allocated --</option>';
+
+        try {
+            const res = await fetch('/api/rooms');
+            const result = await res.json();
+            if (result.success && result.data && result.data.rooms) {
+                result.data.rooms.forEach(r => {
+                    const opt = document.createElement('option');
+                    opt.value = r.room_id;
+                    opt.textContent = `Room ${r.room_no} (${r.block} - ${r.occupied_count}/${r.capacity} Occupied)`;
+                    if (selectedRoomId && parseInt(selectedRoomId, 10) === r.room_id) {
+                        opt.selected = true;
+                    }
+                    select.appendChild(opt);
+                });
+            }
+        } catch (e) {
+            console.error('Error populating room options:', e);
+        }
+    }
+
+    function setPersonalFieldsReadonly(readonly = false) {
+        ['studentNameInput', 'studentRollInput', 'studentContactInput', 'studentEmailInput'].forEach(id => {
+            const elem = document.getElementById(id);
+            if (elem) {
+                elem.readOnly = readonly;
+                elem.style.background = readonly ? '#f1f5f9' : '#ffffff';
+                elem.style.cursor = readonly ? 'not-allowed' : 'text';
+            }
+        });
+    }
+
+    window.openAddStudentModal = () => {
+        document.getElementById('studentForm').reset();
+        document.getElementById('studentEditId').value = '';
+        document.getElementById('studentModalTitle').textContent = 'Add New Student';
+        document.getElementById('btnSaveStudent').textContent = 'Save Student';
+        const removeBtn = document.getElementById('btnRemoveStudent');
+        if (removeBtn) removeBtn.style.display = 'none';
+
+        setPersonalFieldsReadonly(false);
+        const statusSelect = document.getElementById('studentStatusSelect');
+        if (statusSelect) statusSelect.value = 'Active';
+
+        populateStudentRoomOptions();
+        const modal = document.getElementById('studentModal');
+        if (modal) modal.style.display = 'flex';
+    };
+
+    window.openEditStudentModal = async (studentId) => {
+        try {
+            const res = await fetch(`/api/students/${studentId}`);
+            const result = await res.json();
+            if (result.success && result.data) {
+                const s = result.data;
+                document.getElementById('studentEditId').value = s.student_id;
+                document.getElementById('studentNameInput').value = s.name;
+                document.getElementById('studentRollInput').value = s.roll_no;
+                document.getElementById('studentContactInput').value = s.contact;
+                document.getElementById('studentEmailInput').value = s.email;
+                
+                const statusSelect = document.getElementById('studentStatusSelect');
+                if (statusSelect) statusSelect.value = s.status || 'Active';
+
+                setPersonalFieldsReadonly(true);
+
+                await populateStudentRoomOptions(s.room_id);
+
+                document.getElementById('studentModalTitle').textContent = `Manage Student: ${s.name} (Read-Only Info)`;
+                document.getElementById('btnSaveStudent').textContent = 'Save Status & Room';
+
+                const removeBtn = document.getElementById('btnRemoveStudent');
+                if (removeBtn) removeBtn.style.display = 'block';
+
+                const modal = document.getElementById('studentModal');
+                if (modal) modal.style.display = 'flex';
+            }
+        } catch (e) {
+            showToast('Failed to fetch student details', 'error');
+        }
+    };
+
+    window.closeStudentModal = () => {
+        const modal = document.getElementById('studentModal');
+        if (modal) modal.style.display = 'none';
+    };
+
+    window.confirmDeleteStudentFromModal = () => {
+        const studentId = document.getElementById('studentEditId').value;
+        const name = document.getElementById('studentNameInput').value;
+        if (studentId) {
+            closeStudentModal();
+            confirmDeleteStudent(studentId, name);
+        }
+    };
+
+    window.saveStudentForm = async (event) => {
+        event.preventDefault();
+        const editId = document.getElementById('studentEditId').value;
+        const name = document.getElementById('studentNameInput').value.trim();
+        const roll_no = document.getElementById('studentRollInput').value.trim();
+        const contact = document.getElementById('studentContactInput').value.trim();
+        const email = document.getElementById('studentEmailInput').value.trim();
+        const room_id = document.getElementById('studentRoomSelect').value;
+        const statusSelect = document.getElementById('studentStatusSelect');
+        const status = statusSelect ? statusSelect.value : 'Active';
+
+        const payload = { name, roll_no, contact, email, room_id, status };
+        const url = editId ? `/api/students/${editId}` : '/api/students';
+        const method = editId ? 'PUT' : 'POST';
+
+        const saveBtn = document.getElementById('btnSaveStudent');
+        if (saveBtn) saveBtn.disabled = true;
+
+        try {
+            const res = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await res.json();
+            if (result.success) {
+                showToast(editId ? 'Student status & room allocation updated!' : 'New student created successfully!', 'success');
+                appCache.invalidate();
+                closeStudentModal();
+                loadWardenDashboardData();
+                fetchWardenStudents();
+            } else {
+                showToast(`Error: ${result.message}`, 'error');
+            }
+        } catch (e) {
+            showToast('Network error saving student record', 'error');
+        } finally {
+            if (saveBtn) saveBtn.disabled = false;
+        }
+    };
+
+    window.confirmDeleteStudent = async (studentId, name) => {
+
+        if (!confirm(`Are you sure you want to delete student "${name}"? This action cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/students/${studentId}`, { method: 'DELETE' });
+            const result = await res.json();
+            if (result.success) {
+                showToast(`Student "${name}" deleted.`, 'info');
+                appCache.invalidate();
+                loadWardenDashboardData();
+                fetchWardenStudents();
+            } else {
+                showToast(`Failed to delete student: ${result.message}`, 'error');
+            }
+        } catch (e) {
+            showToast('Network error deleting student', 'error');
+        }
+    };
+
+    window.openCsvUploadModal = () => {
+        document.getElementById('csvForm').reset();
+        document.getElementById('csvFileStatus').textContent = 'Supports .csv files with roll_no, name, email, contact, room_no';
+        const modal = document.getElementById('csvUploadModal');
+        if (modal) modal.style.display = 'flex';
+    };
+
+    window.closeCsvUploadModal = () => {
+        const modal = document.getElementById('csvUploadModal');
+        if (modal) modal.style.display = 'none';
+    };
+
+    window.onCsvFileSelected = (input) => {
+        const statusElem = document.getElementById('csvFileStatus');
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            statusElem.innerHTML = `<strong style="color:#059669;">Selected File:</strong> ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+        } else {
+            statusElem.textContent = 'Supports .csv files with roll_no, name, email, contact, room_no';
+        }
+    };
+
+    window.handleCsvUpload = async (event) => {
+        event.preventDefault();
+        const fileInput = document.getElementById('csvFileInput');
+        if (!fileInput.files || !fileInput.files[0]) {
+            showToast('Please select a CSV file to upload.', 'warning');
+            return;
+        }
+
+        const submitBtn = document.getElementById('btnSubmitCsv');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span>Uploading & Processing...</span>';
+        }
+
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+
+        try {
+            const res = await fetch('/api/students/upload-csv', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await res.json();
+            if (result.success) {
+                showToast(result.message, 'success');
+                appCache.invalidate();
+                closeCsvUploadModal();
+                loadWardenDashboardData();
+                fetchWardenStudents();
+                populateTopbarStudentSelect();
+            } else {
+                showToast(`CSV Upload Error: ${result.message}`, 'error');
+            }
+        } catch (e) {
+            showToast('Network error uploading CSV file', 'error');
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Process & Upload Dataset</span>';
+            }
+        }
+    };
+
+    // ==================== DYNAMIC TOPBAR STUDENT SELECTOR ====================
+    async function populateTopbarStudentSelect() {
+        const select = document.getElementById('studentSelect');
+        if (!select) return;
+        const currentVal = select.value;
+
+        try {
+            const res = await fetch('/api/students');
+            const result = await res.json();
+            if (result.success && result.data && result.data.length > 0) {
+                select.innerHTML = '';
+                result.data.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.student_id;
+                    const roomInfo = s.room_no ? `Room ${s.room_no}` : 'Unassigned';
+                    opt.textContent = `${s.name} (${s.roll_no} - ${roomInfo})`;
+                    select.appendChild(opt);
+                });
+                if (currentVal && Array.from(select.options).some(o => o.value == currentVal)) {
+                    select.value = currentVal;
+                }
+            }
+        } catch (e) {
+            console.error('Error populating topbar student select:', e);
+        }
+    }
+
+    // Call on page load
+    populateTopbarStudentSelect();
+
+    // ==================== STUDENT LEAVE APPLICATION MODAL ====================
+    window.openStudentLeaveModal = () => {
+        const form = document.getElementById('studentLeaveForm');
+        if (form) form.reset();
+        
+        const todayStr = new Date().toISOString().split('T')[0];
+        const startInput = document.getElementById('leaveStartDate');
+        const endInput = document.getElementById('leaveEndDate');
+
+        if (startInput) startInput.value = todayStr;
+        if (endInput) {
+            const tmr = new Date();
+            tmr.setDate(tmr.getDate() + 2);
+            endInput.value = tmr.toISOString().split('T')[0];
+        }
+
+        const modal = document.getElementById('studentLeaveModal');
+        if (modal) modal.style.display = 'flex';
+    };
+
+    window.closeStudentLeaveModal = () => {
+        const modal = document.getElementById('studentLeaveModal');
+        if (modal) modal.style.display = 'none';
+    };
+
+    window.submitStudentLeaveForm = async (event) => {
+        event.preventDefault();
+        const sId = getStudentId();
+
+        const leave_type = document.getElementById('leaveTypeSelect').value;
+
+        const start_date = document.getElementById('leaveStartDate').value;
+        const end_date = document.getElementById('leaveEndDate').value;
+        const reason = document.getElementById('leaveReasonInput').value.trim();
+
+        if (start_date > end_date) {
+            showToast('Start Date cannot be after End Date.', 'warning');
+            return;
+        }
+
+        const btn = document.getElementById('btnSubmitLeave');
+        if (btn) btn.disabled = true;
+
+        try {
+            const res = await fetch('/api/leaves', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    student_id: sId,
+                    leave_type: leave_type,
+                    start_date: start_date,
+                    end_date: end_date,
+                    reason: reason
+                })
+            });
+            const result = await res.json();
+            if (result.success) {
+                const leaveId = result.data ? result.data.leave_id : 'Pending';
+                showToast(`Leave application submitted successfully! (${leaveId})`, 'success');
+                appCache.invalidate(); // Invalidate cache so Warden View immediately sees new leave!
+                closeStudentLeaveModal();
+                loadStudentPortalData(true);
+            } else {
+                showToast(`Failed to submit leave: ${result.message}`, 'error');
+            }
+        } catch (e) {
+            showToast('Network error submitting leave request', 'error');
+        } finally {
+            if (btn) btn.disabled = false;
+        }
+    };
 });
+
+
+

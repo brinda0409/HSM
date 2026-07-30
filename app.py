@@ -17,6 +17,7 @@ from routes.room_routes import room_bp
 from routes.leave_routes import leave_bp
 from routes.info_routes import info_bp
 from routes.student_routes import student_bp
+from routes.report_routes import report_bp
 
 def create_app():
     """Factory function to configure and initialize Flask Application."""
@@ -38,6 +39,8 @@ def create_app():
     app.register_blueprint(leave_bp)
     app.register_blueprint(info_bp)
     app.register_blueprint(student_bp)
+    app.register_blueprint(report_bp)
+
 
     @app.route("/")
     def landing():
@@ -67,3 +70,5 @@ if __name__ == "__main__":
     
     logger.info(f"Starting Smart Hostel Management System server on http://{host}:{port}")
     app.run(host=host, port=port, debug=debug)
+# Server reloader trigger
+

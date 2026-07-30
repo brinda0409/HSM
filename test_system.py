@@ -67,7 +67,8 @@ class TestSHMSSystem(unittest.TestCase):
         }
         res = visitor_agent.process_request(req)
         self.assertTrue(res["success"])
-        self.assertEqual(res["data"]["status"], "Approved")
+        self.assertEqual(res["data"]["status"], "Pending")
+
 
     def test_04_room_agent(self):
         """Test room availability query and transfer."""
@@ -130,5 +131,58 @@ class TestSHMSSystem(unittest.TestCase):
         r_info = self.client.get("/api/info")
         self.assertEqual(r_info.status_code, 200)
 
+    def test_10_pdf_report_endpoint(self):
+        """Test PDF Report generation endpoint."""
+        res = self.client.get("/api/reports/download-pdf?start_date=2026-01-01&end_date=2026-12-31&category=all")
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.mimetype, "application/pdf")
+        self.assertGreater(len(res.data), 1000)
+
+    def test_11_student_crud_and_csv_upload(self):
+        """Test Student CRUD endpoints and CSV Dataset upload."""
+        import io
+
+        # 1. Create Student
+        new_student = {
+            "name": "Test Student",
+            "roll_no": "2026-TEST-999",
+            "email": "test999@hostel.edu",
+            "contact": "+91-9999900000",
+            "room_id": 1,
+            "password": "password123"
+        }
+        res_create = self.client.post("/api/students", json=new_student)
+        self.assertEqual(res_create.status_code, 201)
+        st_id = res_create.json["student_id"]
+
+        # 2. Get Student
+        res_get = self.client.get(f"/api/students/{st_id}")
+        self.assertEqual(res_get.status_code, 200)
+        self.assertEqual(res_get.json["data"]["name"], "Test Student")
+
+        # 3. Update Student
+        res_upd = self.client.put(f"/api/students/{st_id}", json={"name": "Updated Test Student", "contact": "+91-8888800000"})
+        self.assertEqual(res_upd.status_code, 200)
+
+        # 4. Delete Student
+        res_del = self.client.delete(f"/api/students/{st_id}")
+        self.assertEqual(res_del.status_code, 200)
+
+        # 5. CSV Dataset Upload
+        csv_data = (
+            "roll_no,name,email,contact,room_no,password\n"
+            "2026-CSV-001,CSV Student One,csv1@hostel.edu,+91-7777711111,A-101,password123\n"
+            "2026-CSV-002,CSV Student Two,csv2@hostel.edu,+91-7777722222,A-102,password123\n"
+        )
+        data = {
+            'file': (io.BytesIO(csv_data.encode('utf-8')), 'test_students.csv')
+        }
+        res_csv = self.client.post('/api/students/upload-csv', data=data, content_type='multipart/form-data')
+        self.assertEqual(res_csv.status_code, 200)
+        self.assertTrue(res_csv.json["success"])
+        self.assertGreaterEqual(res_csv.json["created"], 2)
+
 if __name__ == "__main__":
     unittest.main()
+
+

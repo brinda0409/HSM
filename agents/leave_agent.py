@@ -105,9 +105,9 @@ class LeaveAgent:
     def get_leave(self, leave_id=None, student_id=None):
         """Retrieves specific leave record or latest leave for student."""
         if leave_id:
-            row = query_one("SELECT l.*, s.name as student_name FROM leaves l JOIN students s ON l.student_id = s.student_id WHERE l.leave_id = ?", (leave_id,))
+            row = query_one("SELECT l.*, COALESCE(s.name, 'Student #' || l.student_id) as student_name FROM leaves l LEFT JOIN students s ON CAST(l.student_id AS TEXT) = CAST(s.student_id AS TEXT) WHERE l.leave_id = ?", (leave_id,))
         elif student_id:
-            row = query_one("SELECT l.*, s.name as student_name FROM leaves l JOIN students s ON l.student_id = s.student_id WHERE l.student_id = ? ORDER BY l.applied_at DESC LIMIT 1", (student_id,))
+            row = query_one("SELECT l.*, COALESCE(s.name, 'Student #' || l.student_id) as student_name FROM leaves l LEFT JOIN students s ON CAST(l.student_id AS TEXT) = CAST(s.student_id AS TEXT) WHERE CAST(l.student_id AS TEXT) = CAST(? AS TEXT) ORDER BY l.applied_at DESC LIMIT 1", (student_id,))
         else:
             row = None
 
@@ -129,9 +129,9 @@ class LeaveAgent:
     def list_leaves(self, student_id=None):
         """Lists leave records for student, or all leave records if student_id is None."""
         if student_id:
-            rows = query_all("SELECT l.*, s.name as student_name, r.room_no FROM leaves l JOIN students s ON l.student_id = s.student_id LEFT JOIN rooms r ON s.room_id = r.room_id WHERE l.student_id = ? ORDER BY l.applied_at DESC", (student_id,))
+            rows = query_all("SELECT l.*, COALESCE(s.name, 'Student #' || l.student_id) as student_name, r.room_no FROM leaves l LEFT JOIN students s ON CAST(l.student_id AS TEXT) = CAST(s.student_id AS TEXT) LEFT JOIN rooms r ON s.room_id = r.room_id WHERE CAST(l.student_id AS TEXT) = CAST(? AS TEXT) ORDER BY l.applied_at DESC", (student_id,))
         else:
-            rows = query_all("SELECT l.*, s.name as student_name, r.room_no FROM leaves l JOIN students s ON l.student_id = s.student_id LEFT JOIN rooms r ON s.room_id = r.room_id ORDER BY l.applied_at DESC")
+            rows = query_all("SELECT l.*, COALESCE(s.name, 'Student #' || l.student_id) as student_name, r.room_no FROM leaves l LEFT JOIN students s ON CAST(l.student_id AS TEXT) = CAST(s.student_id AS TEXT) LEFT JOIN rooms r ON s.room_id = r.room_id ORDER BY l.applied_at DESC")
 
         return {
             "success": True,
@@ -139,6 +139,7 @@ class LeaveAgent:
             "data": {"leaves": rows, "count": len(rows)},
             "message": f"Retrieved {len(rows)} leave records."
         }
+
 
     def update_status(self, leave_id, status):
         """Updates status of a leave request (Approved / Rejected / Pending)."""

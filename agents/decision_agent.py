@@ -3,7 +3,7 @@ from services.db_service import execute_query
 from agents.complaint_agent import complaint_agent
 from agents.visitor_agent import visitor_agent
 from agents.room_agent import room_agent
-from agents.info_agent import info_agent
+from agents.hostel_information_agent import hostel_information_agent
 from agents.leave_agent import leave_agent
 from utils.logger import logger
 
@@ -32,7 +32,7 @@ class DecisionAgent:
             "transfer_room": room_agent,
             "list_rooms": room_agent,
 
-            "get_hostel_info": info_agent,
+            "get_hostel_info": hostel_information_agent,
 
             "apply_leave": leave_agent,
             "get_leave_status": leave_agent,

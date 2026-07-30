@@ -72,8 +72,18 @@
                         <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                         <span>AI Audit Logs</span>
                     </a>
+                    <a href="javascript:void(0)" class="nav-link" id="nav-warden-students" onclick="switchMainView('warden', 'students', this)" data-tooltip="Student Directory & Dataset Upload">
+                        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <span>Student Directory</span>
+                    </a>
+                    <a href="javascript:void(0)" class="nav-link report-nav-btn" id="nav-warden-report" onclick="openReportModal()" data-tooltip="Download PDF Reports by Date Range" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #059669; font-weight: 700; margin-top: 0.5rem;">
+                        <svg class="svg-icon" viewBox="0 0 24 24" style="stroke: #059669;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+                        <span>Generate PDF Report</span>
+                    </a>
                 </div>
             </nav>
+
+
 
             <div class="sidebar-footer">
                 <button class="btn-dark-action" onclick="resetDemoData()" data-tooltip="Reload Database Records">
@@ -225,19 +235,24 @@
                     <!-- 3 Column Content Grid -->
                     <div class="hsm-grid-3">
                         
-                        <!-- Card 1: My Complaints -->
+                        <!-- Card 1: My Complaints & Leaves -->
                         <div class="hsm-card">
-                            <div class="card-head">
+                            <div class="card-head" style="display: flex; justify-content: space-between; align-items: center;">
                                 <h3 style="display:inline-flex; align-items:center; gap:0.4rem;">
                                     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
                                     Complaints & Maintenance
                                 </h3>
+                                <button class="btn-action" onclick="openStudentLeaveModal()" style="background: #0284c7; color: #ffffff; border: none; font-weight: 700; display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.35rem 0.75rem; border-radius: 6px; cursor: pointer;" data-tooltip="Apply for home leave or outing pass">
+                                    <svg class="svg-icon icon-sm" viewBox="0 0 24 24" style="stroke: white;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                    <span>Apply for Leave</span>
+                                </button>
                             </div>
                             <div class="item-list" id="complaintItemsList">
                                 <div class="skeleton-row skeleton"></div>
                                 <div class="skeleton-row skeleton"></div>
                             </div>
                         </div>
+
 
                         <!-- Card 2: Hostel Guidelines & Mess Timings -->
                         <div class="hsm-card">
@@ -405,7 +420,9 @@
                         <button class="tab-btn" data-tab="visitors" onclick="switchWardenTab('visitors')">Visitor Logs</button>
                         <button class="tab-btn" data-tab="rooms" onclick="switchWardenTab('rooms')">Room Occupancy & Allocation</button>
                         <button class="tab-btn" data-tab="logs" onclick="switchWardenTab('logs')">AI Agent Chat Audit Logs</button>
+                        <button class="tab-btn" data-tab="students" onclick="switchWardenTab('students')">Student Directory & CSV Import</button>
                     </div>
+
 
                     <!-- Tab 1: Complaints Table -->
                     <div id="tab-complaints" class="tab-content">
@@ -470,11 +487,13 @@
                                         <th>Visit Time</th>
                                         <th>Purpose</th>
                                         <th>Status</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="visitorsTableBody">
-                                    <tr><td colspan="9"><div class="skeleton-row skeleton"></div></td></tr>
+                                    <tr><td colspan="10"><div class="skeleton-row skeleton"></div></td></tr>
                                 </tbody>
+
                             </table>
                         </div>
                     </div>
@@ -523,10 +542,287 @@
                         </div>
                     </div>
 
+                    <!-- Tab 6: Student Directory & CSV Import -->
+                    <div id="tab-students" class="tab-content" style="display: none;">
+                        <!-- Student Toolbar -->
+                        <div class="student-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; background: #ffffff; padding: 0.8rem 1rem; border-radius: 12px; border: 1px solid var(--card-border); gap: 1rem; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 0.6rem; flex: 1; min-width: 240px; background: #f8fafc; padding: 0.4rem 0.8rem; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                <svg class="svg-icon" viewBox="0 0 24 24" style="stroke: #64748b; width:18px; height:18px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                <input type="text" id="studentSearchInput" onkeyup="filterStudentsTable()" placeholder="Search students by name, roll no, room, or email..." style="width: 100%; border: none; outline: none; background: transparent; font-size: 0.85rem; font-weight: 500; color: #0f172a;">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                                <a href="/api/students/sample-csv" download class="btn-action" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.8rem; border-radius: 8px;">
+                                    <svg class="svg-icon icon-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    <span>Sample CSV</span>
+                                </a>
+                                <button type="button" class="btn-action" onclick="openCsvUploadModal()" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.8rem; cursor: pointer; border-radius: 8px;">
+                                    <svg class="svg-icon icon-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                    <span>Upload CSV Dataset</span>
+                                </button>
+                                <button type="button" class="btn-action" onclick="openAddStudentModal()" style="background: #059669; color: #ffffff; border: none; font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.9rem; cursor: pointer; border-radius: 8px;">
+                                    <svg class="svg-icon icon-sm" viewBox="0 0 24 24" style="stroke: white;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                    <span>+ Add Student</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Students Table Container -->
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Roll No</th>
+                                        <th>Full Name</th>
+                                        <th>Email</th>
+                                        <th>Contact</th>
+                                        <th>Allocated Room</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentsTableBody">
+                                    <tr><td colspan="8"><div class="skeleton-row skeleton"></div></td></tr>
+                                </tbody>
+
+                            </table>
+                        </div>
+                    </div>
+
+
                 </div>
 
             </div>
         </main>
+    </div>
+
+    <!-- Report Generator Modal -->
+    <div id="reportModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center;">
+        <div class="modal-card" style="background: #ffffff; border-radius: 16px; width: 90%; max-width: 520px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); overflow: hidden;">
+            <div class="modal-header" style="padding: 1.2rem 1.5rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; background: #f8fafc;">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                    <div style="background: rgba(16, 185, 129, 0.12); padding: 0.5rem; border-radius: 8px; color: #059669; display: flex;">
+                        <svg class="svg-icon icon-lg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.15rem; color: #0f172a; font-weight: 800;">Generate PDF Report</h3>
+                        <p style="margin: 0; font-size: 0.78rem; color: #64748b;">Select date range and category to export PDF document</p>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="closeReportModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
+            </div>
+            
+            <div class="modal-body" style="padding: 1.2rem 1.5rem;">
+                <!-- Date Quick Shortcuts -->
+                <div style="margin-bottom: 1.2rem;">
+                    <label style="font-size: 0.78rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.4rem;">Quick Range Shortcuts</label>
+                    <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+                        <button type="button" class="btn-shortcut" onclick="setReportDateShortcut('today')">Today</button>
+                        <button type="button" class="btn-shortcut" onclick="setReportDateShortcut('7days')">Last 7 Days</button>
+                        <button type="button" class="btn-shortcut active" onclick="setReportDateShortcut('30days')">Last 30 Days</button>
+                        <button type="button" class="btn-shortcut" onclick="setReportDateShortcut('month')">This Month</button>
+                        <button type="button" class="btn-shortcut" onclick="setReportDateShortcut('all')">All Time</button>
+                    </div>
+                </div>
+
+                <!-- Custom Date Range Inputs -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.2rem;">
+                    <div class="form-group">
+                        <label for="reportStartDate" style="font-size: 0.82rem; font-weight: 700; color: #0f172a; margin-bottom: 0.3rem; display: block;">Start Date</label>
+                        <input type="date" id="reportStartDate" class="form-input" style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; color: #0f172a;">
+                    </div>
+                    <div class="form-group">
+                        <label for="reportEndDate" style="font-size: 0.82rem; font-weight: 700; color: #0f172a; margin-bottom: 0.3rem; display: block;">End Date</label>
+                        <input type="date" id="reportEndDate" class="form-input" style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; color: #0f172a;">
+                    </div>
+                </div>
+
+                <!-- Report Category Selection -->
+                <div class="form-group" style="margin-bottom: 1.2rem;">
+                    <label for="reportCategory" style="font-size: 0.82rem; font-weight: 700; color: #0f172a; margin-bottom: 0.3rem; display: block;">Report Category / Scope</label>
+                    <select id="reportCategory" class="form-input" style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; font-weight: 600; color: #0f172a; background: #ffffff;">
+                        <option value="all" selected>All Hostel Operations (Comprehensive)</option>
+                        <option value="complaints">Student Complaints & Maintenance</option>
+                        <option value="leaves">Student Outing & Leave Requests</option>
+                        <option value="visitors">Visitor Security & Gate Pass Logs</option>
+                        <option value="audit">AI Assistant Audit Logs</option>
+                    </select>
+                </div>
+
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 0.75rem 1rem; border-radius: 8px; display: flex; align-items: center; gap: 0.6rem;">
+                    <svg class="svg-icon" viewBox="0 0 24 24" style="stroke: #059669; min-width: 20px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    <span style="font-size: 0.78rem; color: #166534; font-weight: 500;">Generates an official formatted PDF document with metrics, data tables, and audit timestamps.</span>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 0.6rem; background: #f8fafc;">
+                <button type="button" class="btn-secondary" onclick="closeReportModal()" style="padding: 0.55rem 1.2rem; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600; font-size: 0.85rem; color: #334155;">Cancel</button>
+                <button type="button" id="btnDownloadPdf" class="btn-primary" onclick="downloadPdfReport()" style="padding: 0.55rem 1.4rem; border-radius: 8px; background: #059669; color: white; border: none; cursor: pointer; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; transition: background 0.2s;">
+                    <svg class="svg-icon" viewBox="0 0 24 24" style="stroke: white;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span id="btnDownloadPdfText">Download PDF</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Student Modal -->
+    <div id="studentModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center;">
+        <div class="modal-card" style="background: #ffffff; border-radius: 16px; width: 90%; max-width: 520px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); overflow: hidden;">
+            <div class="modal-header" style="padding: 1.2rem 1.5rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; background: #f8fafc;">
+                <h3 id="studentModalTitle" style="margin: 0; font-size: 1.15rem; color: #0f172a; font-weight: 800;">Add New Student</h3>
+                <button class="modal-close-btn" onclick="closeStudentModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
+            </div>
+            
+            <form id="studentForm" onsubmit="saveStudentForm(event)">
+                <input type="hidden" id="studentEditId">
+                <div class="modal-body" style="padding: 1.2rem 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="studentNameInput" style="font-size: 0.82rem; font-weight: 700; color: #0f172a; margin-bottom: 0.3rem; display: block;">Full Name *</label>
+                        <input type="text" id="studentNameInput" required placeholder="e.g. Alex Johnson" style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; color: #0f172a;">
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label for="studentRollInput" style="font-size: 0.82rem; font-weight: 700; color: #0f172a; margin-bottom: 0.3rem; display: block;">Roll Number *</label>
+                            <input type="text" id="studentRollInput" required placeholder="e.g. 2026-CS-105" style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; color: #0f172a;">
+                        </div>
+                        <div class="form-group">
+                            <label for="studentContactInput" style="font-size: 0.82rem; font-weight: 700; color: #0f172a; margin-bottom: 0.3rem; display: block;">Contact Number *</label>
+                            <input type="text" id="studentContactInput" required placeholder="e.g. +91-9876543210" style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; color: #0f172a;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="studentEmailInput" style="font-size: 0.82rem; font-weight: 700; color: #0f172a; margin-bottom: 0.3rem; display: block;">Email Address *</label>
+                        <input type="email" id="studentEmailInput" required placeholder="e.g. student@hostel.edu" style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; color: #0f172a;">
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label for="studentStatusSelect" style="font-size: 0.82rem; font-weight: 700; color: #0f172a; margin-bottom: 0.3rem; display: block;">Account Status</label>
+                            <select id="studentStatusSelect" style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; color: #0f172a; background: #fff; font-weight: 700;">
+                                <option value="Active" selected>Active</option>
+                                <option value="Suspended">Suspended</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="studentRoomSelect" style="font-size: 0.82rem; font-weight: 700; color: #0f172a; margin-bottom: 0.3rem; display: block;">Assigned Room</label>
+                            <select id="studentRoomSelect" style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; color: #0f172a; background: #fff;">
+                                <option value="">-- No Room Allocated --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
+                    <button type="button" id="btnRemoveStudent" class="btn-action btn-reject" onclick="confirmDeleteStudentFromModal()" style="padding: 0.55rem 1.1rem; border-radius: 8px; font-weight: 700; cursor: pointer; display: none;">Remove Student</button>
+                    <div style="display: flex; gap: 0.6rem; margin-left: auto;">
+                        <button type="button" class="btn-secondary" onclick="closeStudentModal()" style="padding: 0.55rem 1.2rem; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600; font-size: 0.85rem;">Cancel</button>
+                        <button type="submit" id="btnSaveStudent" class="btn-primary" style="padding: 0.55rem 1.4rem; border-radius: 8px; background: #059669; color: white; border: none; cursor: pointer; font-weight: 700; font-size: 0.85rem;">Save Details</button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- CSV Dataset Upload Modal -->
+    <div id="csvUploadModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center;">
+        <div class="modal-card" style="background: #ffffff; border-radius: 16px; width: 90%; max-width: 520px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); overflow: hidden;">
+            <div class="modal-header" style="padding: 1.2rem 1.5rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; background: #f8fafc;">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                    <div style="background: rgba(37, 99, 235, 0.12); padding: 0.5rem; border-radius: 8px; color: #2563eb; display: flex;">
+                        <svg class="svg-icon icon-lg" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.15rem; color: #0f172a; font-weight: 800;">Upload Student CSV Dataset</h3>
+                        <p style="margin: 0; font-size: 0.78rem; color: #64748b;">Bulk import student records from any CSV file</p>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="closeCsvUploadModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
+            </div>
+            
+            <form id="csvForm" onsubmit="handleCsvUpload(event)">
+                <div class="modal-body" style="padding: 1.2rem 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                    <div class="dropzone" style="border: 2px dashed #cbd5e1; border-radius: 12px; padding: 1.5rem; text-align: center; background: #f8fafc; cursor: pointer; transition: all 0.2s;" onclick="document.getElementById('csvFileInput').click()">
+                        <svg class="svg-icon" viewBox="0 0 24 24" style="stroke: #2563eb; width: 40px; height: 40px; margin-bottom: 0.5rem;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        <h4 style="margin: 0 0 0.3rem 0; font-size: 0.95rem; color: #0f172a;">Click to select CSV File</h4>
+                        <p style="margin: 0; font-size: 0.78rem; color: #64748b;" id="csvFileStatus">Supports .csv files with roll_no, name, email, contact, room_no</p>
+                        <input type="file" id="csvFileInput" accept=".csv" required style="display: none;" onchange="onCsvFileSelected(this)">
+                    </div>
+
+                    <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 0.75rem 1rem; border-radius: 8px; display: flex; align-items: flex-start; gap: 0.6rem;">
+                        <svg class="svg-icon" viewBox="0 0 24 24" style="stroke: #2563eb; min-width: 20px; margin-top: 2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <div style="font-size: 0.78rem; color: #1e40af; line-height: 1.4;">
+                            <strong>CSV Header Format Requirement:</strong><br>
+                            <code>roll_no, name, email, contact, room_no, password</code><br>
+                            If roll_no already exists, the record will be updated automatically.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 0.6rem; background: #f8fafc;">
+                    <button type="button" class="btn-secondary" onclick="closeCsvUploadModal()" style="padding: 0.55rem 1.2rem; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600; font-size: 0.85rem;">Cancel</button>
+                    <button type="submit" id="btnSubmitCsv" class="btn-primary" style="padding: 0.55rem 1.4rem; border-radius: 8px; background: #2563eb; color: white; border: none; cursor: pointer; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span>Process & Upload Dataset</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Student Leave Application Modal -->
+    <div id="studentLeaveModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center;">
+        <div class="modal-card" style="background: #ffffff; border-radius: 16px; width: 90%; max-width: 500px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); overflow: hidden;">
+            <div class="modal-header" style="padding: 1.2rem 1.5rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; background: #f8fafc;">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                    <div style="background: rgba(2, 132, 199, 0.12); padding: 0.5rem; border-radius: 8px; color: #0284c7; display: flex;">
+                        <svg class="svg-icon icon-lg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.15rem; color: #0f172a; font-weight: 800;">Apply for Leave</h3>
+                        <p style="margin: 0; font-size: 0.78rem; color: #64748b;">Submit outing / leave application to Warden</p>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="closeStudentLeaveModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
+            </div>
+            
+            <form id="studentLeaveForm" onsubmit="submitStudentLeaveForm(event)">
+                <div class="modal-body" style="padding: 1.2rem 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="leaveTypeSelect" style="font-size: 0.82rem; font-weight: 700; color: #0f172a; margin-bottom: 0.3rem; display: block;">Leave Type *</label>
+                        <select id="leaveTypeSelect" required style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; color: #0f172a; background: #fff;">
+                            <option value="Home Leave" selected>Home Leave</option>
+                            <option value="Outing Pass">Weekend Outing Pass</option>
+                            <option value="Emergency">Emergency Leave</option>
+                            <option value="Medical">Medical Leave</option>
+                        </select>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label for="leaveStartDate" style="font-size: 0.82rem; font-weight: 700; color: #0f172a; margin-bottom: 0.3rem; display: block;">Start Date *</label>
+                            <input type="date" id="leaveStartDate" required style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; color: #0f172a;">
+                        </div>
+                        <div class="form-group">
+                            <label for="leaveEndDate" style="font-size: 0.82rem; font-weight: 700; color: #0f172a; margin-bottom: 0.3rem; display: block;">End Date *</label>
+                            <input type="date" id="leaveEndDate" required style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; color: #0f172a;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="leaveReasonInput" style="font-size: 0.82rem; font-weight: 700; color: #0f172a; margin-bottom: 0.3rem; display: block;">Reason for Leave *</label>
+                        <textarea id="leaveReasonInput" required rows="3" placeholder="State purpose of leave / outing..." style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; color: #0f172a; resize: vertical;"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 0.6rem; background: #f8fafc;">
+                    <button type="button" class="btn-secondary" onclick="closeStudentLeaveModal()" style="padding: 0.55rem 1.2rem; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 600; font-size: 0.85rem;">Cancel</button>
+                    <button type="submit" id="btnSubmitLeave" class="btn-primary" style="padding: 0.55rem 1.4rem; border-radius: 8px; background: #0284c7; color: white; border: none; cursor: pointer; font-weight: 700; font-size: 0.85rem;">Submit Leave Request</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Toast Notification Container -->
@@ -536,3 +832,5 @@
     <script src="/static/js/app.js"></script>
 </body>
 </html>
+
+

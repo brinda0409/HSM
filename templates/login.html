@@ -217,9 +217,10 @@
             <input type="hidden" id="roleInput" value="student">
 
             <div class="form-group">
-                <label id="emailLabel">Student Email Address</label>
-                <input type="email" id="emailInput" class="form-control" placeholder="alex.j@hostel.edu" required>
+                <label id="emailLabel">Student Email Address or Roll Number</label>
+                <input type="text" id="emailInput" class="form-control" placeholder="e.g. alex.j@hostel.edu or CS2024-001" required>
             </div>
+
 
             <div class="form-group">
                 <label>Password</label>
@@ -262,6 +263,15 @@
                     </div>
                     <span class="demo-badge">Student 3</span>
                 </button>
+
+                <button type="button" class="demo-btn" onclick="quickLogin('csv1@hostel.edu', 'password123', 'student')" style="background:#f0fdf4; border-color:#bbf7d0; color:#15803d;">
+                    <div>
+                        <strong>CSV Imported Student</strong>
+                        <div style="font-size:0.72rem; color:#166534;">Roll: 2026-CSV-001 (csv1@hostel.edu)</div>
+                    </div>
+                    <span class="demo-badge" style="background:#dcfce7; color:#15803d;">CSV Student</span>
+                </button>
+
 
                 <button type="button" class="demo-btn" onclick="quickLogin('warden@hostel.edu', 'password123', 'warden')" style="background:#eff6ff; border-color:#bfdbfe; color:#1d4ed8;">
                     <div>

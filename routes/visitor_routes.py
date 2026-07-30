@@ -25,3 +25,17 @@ def list_visitors():
     student_id = int(student_id) if student_id and student_id.isdigit() else None
     res = visitor_agent.list_visitors(student_id=student_id)
     return jsonify(res), 200
+
+@visitor_bp.route("/api/visitors/<int:visitor_id>/status", methods=["PUT"])
+def update_visitor_status(visitor_id):
+    """PUT /api/visitors/<visitor_id>/status - Approve or reject visitor pass."""
+    data = request.get_json() or {}
+    status = data.get("status")
+
+    if not status:
+        return jsonify({"success": False, "error": "BAD_REQUEST", "message": "Status field is required."}), 400
+
+    res = visitor_agent.update_status(visitor_id, status)
+    status_code = 200 if res.get("success") else 400
+    return jsonify(res), status_code
+

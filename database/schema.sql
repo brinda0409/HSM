@@ -23,8 +23,10 @@ CREATE TABLE IF NOT EXISTS students (
     contact TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL DEFAULT 'password123',
+    status TEXT NOT NULL DEFAULT 'Active', -- Active, Suspended
     FOREIGN KEY (room_id) REFERENCES rooms(room_id) ON DELETE SET NULL
 );
+
 
 -- 3. Wardens Table
 CREATE TABLE IF NOT EXISTS wardens (
@@ -59,8 +61,9 @@ CREATE TABLE IF NOT EXISTS visitors (
     purpose TEXT NOT NULL,
     visit_date TEXT NOT NULL, -- YYYY-MM-DD
     visit_time TEXT NOT NULL, -- HH:MM
-    status TEXT NOT NULL DEFAULT 'Approved', -- Approved, Rejected, Completed
+    status TEXT NOT NULL DEFAULT 'Pending', -- Pending, Approved, Rejected, Completed
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
     FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE
 );
 

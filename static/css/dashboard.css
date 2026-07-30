@@ -103,3 +103,28 @@
 
 .btn-approve { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
 .btn-reject { background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5; }
+
+/* Report Date Range Shortcuts */
+.btn-shortcut {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-shortcut:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.btn-shortcut.active {
+    background: #059669;
+    color: #ffffff;
+    border-color: #059669;
+}
+

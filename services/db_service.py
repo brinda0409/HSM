@@ -19,6 +19,8 @@ def is_postgres():
 
 def get_db_path():
     """Returns the SQLite database file path from environment variable or default location."""
+    if os.getenv("VERCEL") and not os.getenv("DATABASE_PATH"):
+        return "/tmp/hostel.db"
     return os.getenv("DATABASE_PATH", DEFAULT_DB_PATH)
 
 def get_connection():
@@ -221,8 +223,14 @@ def init_db(reset=False):
                     seed_sql = f.read()
                 conn.executescript(seed_sql)
                 logger.info("SQLite seed data applied successfully.")
-                
-            conn.commit()
+
+            # Migration check: Ensure status column exists in students table
+            try:
+                conn.execute("ALTER TABLE students ADD COLUMN status TEXT NOT NULL DEFAULT 'Active';")
+                conn.commit()
+            except Exception:
+                pass
+
         except Exception as e:
             conn.rollback()
             logger.error(f"Error during SQLite database initialization: {e}")

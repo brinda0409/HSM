@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from agents.info_agent import info_agent
+from agents.hostel_information_agent import hostel_information_agent as info_agent
 
 info_bp = Blueprint("info_bp", __name__)
 

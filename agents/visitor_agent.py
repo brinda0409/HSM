@@ -80,7 +80,7 @@ class VisitorAgent:
         try:
             visitor_id = execute_query(
                 """INSERT INTO visitors (student_id, name, contact, purpose, visit_date, visit_time, status)
-                   VALUES (?, ?, ?, ?, ?, ?, 'Approved')""",
+                   VALUES (?, ?, ?, ?, ?, ?, 'Pending')""",
                 (student_id, name, contact, purpose, visit_date, visit_time)
             )
 
@@ -92,7 +92,7 @@ class VisitorAgent:
                 "purpose": purpose,
                 "visit_date": visit_date,
                 "visit_time": visit_time,
-                "status": "Approved"
+                "status": "Pending"
             }
 
             logger.info(f"[VisitorAgent] Visitor {name} registered with ID: {visitor_id}")
@@ -100,7 +100,7 @@ class VisitorAgent:
                 "success": True,
                 "agent": self.name,
                 "data": visitor_data,
-                "message": f"Visitor {name} registered for {visit_date} at {visit_time}."
+                "message": f"Visitor pass request for '{name}' registered for {visit_date} at {visit_time}. Status: Pending (Waiting for Warden response)."
             }
         except Exception as e:
             logger.error(f"[VisitorAgent] Error registering visitor: {e}")
@@ -114,9 +114,9 @@ class VisitorAgent:
     def list_visitors(self, student_id=None):
         """Lists visitors for a student or all visitors for hostel management."""
         if student_id:
-            rows = query_all("SELECT v.*, s.name as student_name, r.room_no FROM visitors v JOIN students s ON v.student_id = s.student_id LEFT JOIN rooms r ON s.room_id = r.room_id WHERE v.student_id = ? ORDER BY v.visit_date DESC, v.visit_time DESC", (student_id,))
+            rows = query_all("SELECT v.*, COALESCE(s.name, 'Student #' || v.student_id) as student_name, r.room_no FROM visitors v LEFT JOIN students s ON CAST(v.student_id AS TEXT) = CAST(s.student_id AS TEXT) LEFT JOIN rooms r ON s.room_id = r.room_id WHERE CAST(v.student_id AS TEXT) = CAST(? AS TEXT) ORDER BY v.visit_date DESC, v.visit_time DESC", (student_id,))
         else:
-            rows = query_all("SELECT v.*, s.name as student_name, r.room_no FROM visitors v JOIN students s ON v.student_id = s.student_id LEFT JOIN rooms r ON s.room_id = r.room_id ORDER BY v.visit_date DESC, v.visit_time DESC")
+            rows = query_all("SELECT v.*, COALESCE(s.name, 'Student #' || v.student_id) as student_name, r.room_no FROM visitors v LEFT JOIN students s ON CAST(v.student_id AS TEXT) = CAST(s.student_id AS TEXT) LEFT JOIN rooms r ON s.room_id = r.room_id ORDER BY v.visit_date DESC, v.visit_time DESC")
 
         return {
             "success": True,
@@ -125,4 +125,21 @@ class VisitorAgent:
             "message": f"Retrieved {len(rows)} visitor records."
         }
 
+    def update_status(self, visitor_id, status):
+        """Updates status of a visitor pass (Approved / Rejected / Pending)."""
+        valid_statuses = ["Pending", "Approved", "Rejected"]
+        if status not in valid_statuses:
+            return {"success": False, "agent": self.name, "data": {}, "message": f"Invalid status. Must be one of {valid_statuses}"}
+
+        rowcount = execute_query(
+            "UPDATE visitors SET status = ? WHERE visitor_id = ?",
+            (status, visitor_id)
+        )
+
+        if rowcount > 0:
+            return {"success": True, "agent": self.name, "data": {"visitor_id": visitor_id, "status": status}, "message": f"Visitor pass #{visitor_id} updated to {status}."}
+        else:
+            return {"success": False, "agent": self.name, "data": {}, "message": f"Visitor record #{visitor_id} not found."}
+
 visitor_agent = VisitorAgent()
+
