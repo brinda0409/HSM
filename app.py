@@ -50,6 +50,7 @@ def create_app():
 
 
     @app.route("/")
+    @app.route("/api/index.py")
     def landing():
         """SaaS Product Landing Page"""
         return render_template("landing.html")
