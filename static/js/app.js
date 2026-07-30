@@ -743,34 +743,65 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tbody) return;
         tbody.innerHTML = '';
         if (visitors.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:#94a3b8; padding:1rem;">No visitor logs found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#94a3b8; padding:1rem;">No visitor logs found.</td></tr>';
             return;
         }
         visitors.forEach(v => {
-            const tr = document.createElement('tr');
-            tr.id = `row-visitor-${v.visitor_id}`;
+            const ai = v.ai_decision || {
+                risk_score: 10, risk_level: 'Low', recommendation: 'Approve Visitor', confidence: 96,
+                policy_status: 'Valid visiting time', conflict_summary: 'No conflicts detected', historical_summary: '1 visit logged'
+            };
+
+            const riskBg = ai.risk_level === 'High' ? '#fef2f2' : (ai.risk_level === 'Medium' ? '#fffbeb' : '#ecfdf5');
+            const riskColor = ai.risk_level === 'High' ? '#dc2626' : (ai.risk_level === 'Medium' ? '#d97706' : '#059669');
+            const riskBorder = ai.risk_level === 'High' ? '#fca5a5' : (ai.risk_level === 'Medium' ? '#fde68a' : '#a7f3d0');
+
             const statusStr = v.status || 'Pending';
-            let badgeStyle = 'badge-priority-low';
-            if (statusStr === 'Approved') badgeStyle = 'badge-approved';
-            else if (statusStr === 'Rejected') badgeStyle = 'badge-rejected';
-            else if (statusStr === 'Pending') badgeStyle = 'badge-priority-medium';
 
             const actionsHtml = statusStr === 'Pending' ? `
                 <button class="btn-action btn-approve" onclick="updateVisitorStatus(${v.visitor_id}, 'Approved')" data-tooltip="Approve visitor pass">Approve</button>
                 <button class="btn-action btn-reject" onclick="updateVisitorStatus(${v.visitor_id}, 'Rejected')" data-tooltip="Reject visitor pass">Reject</button>
-            ` : `<span style="color:var(--text-secondary); font-size:0.8rem;">Decided</span>`;
+            ` : `<span style="color:var(--text-secondary); font-size:0.8rem; font-weight:700;">Decided</span>`;
 
+            const tr = document.createElement('tr');
+            tr.id = `row-visitor-${v.visitor_id}`;
             tr.innerHTML = `
-                <td>#${v.visitor_id}</td>
-                <td><strong>${v.name}</strong></td>
-                <td>${v.contact}</td>
-                <td>${v.student_name || 'Student #' + v.student_id}</td>
-                <td>${v.room_no || 'N/A'}</td>
-                <td>${v.visit_date}</td>
-                <td>${v.visit_time}</td>
-                <td>${v.purpose}</td>
-                <td><span class="badge ${badgeStyle}">${statusStr}</span></td>
-                <td>${actionsHtml}</td>
+                <td>
+                    <strong>#${v.visitor_id}</strong><br>
+                    <span style="background:${riskBg}; color:${riskColor}; border:1px solid ${riskBorder}; padding:0.15rem 0.5rem; border-radius:9999px; font-size:0.7rem; font-weight:800;">
+                        Risk: ${ai.risk_score}% (${ai.risk_level})
+                    </span>
+                </td>
+                <td>
+                    <strong>${v.name}</strong><br>
+                    <span style="font-size:0.75rem; color:#64748b;">${v.contact} | ${v.purpose || 'Personal'}</span>
+                </td>
+                <td>
+                    <strong>${v.student_name || 'Student #' + v.student_id}</strong><br>
+                    <span style="font-size:0.75rem; color:#64748b;">Room ${v.room_no || 'A-101'}</span>
+                </td>
+                <td>
+                    <span style="font-size:0.8rem; font-weight:700; color:#0f172a;">${v.visit_date}</span><br>
+                    <span style="font-size:0.72rem; color:#64748b;">Time: ${v.visit_time}</span>
+                </td>
+                <td>
+                    <div style="font-size:0.75rem; color:#047857; font-weight:600;">📜 ${ai.policy_status || 'Valid hours'}</div>
+                    <div style="font-size:0.72rem; color:${ai.has_conflicts ? '#dc2626' : '#64748b'}; font-weight:600; margin-top:0.2rem;">
+                        ⚠️ ${ai.conflict_summary || 'No conflicts'}
+                    </div>
+                </td>
+                <td>
+                    <div style="font-size:0.82rem; font-weight:800; color:${riskColor};">
+                        💡 ${ai.recommendation}
+                    </div>
+                    <span style="font-size:0.72rem; font-weight:700; color:#475569;">Confidence: <strong>${ai.confidence}%</strong></span>
+                </td>
+                <td class="leave-status-cell">
+                    <span class="badge badge-${statusStr.toLowerCase()}">${statusStr}</span>
+                </td>
+                <td class="leave-actions-cell">
+                    ${actionsHtml}
+                </td>
             `;
             tbody.appendChild(tr);
         });
