@@ -73,6 +73,9 @@ document.addEventListener('DOMContentLoaded', () => {
     checkAuthSession();
 
     async function checkAuthSession() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const paramRole = urlParams.get('role');
+
         let u = null;
 
         try {
@@ -93,43 +96,46 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        if (u) {
-            const studentNavGroup = document.getElementById('sidebarStudentNavGroup');
-            const wardenNavGroup = document.getElementById('sidebarWardenNavGroup');
-            const roleSwitcher = document.getElementById('topbarRoleSwitcher');
-            const studentSelectWrap = document.getElementById('studentSelectWrap');
+        const isWarden = (paramRole === 'warden') || (u && u.role === 'warden');
 
-            if (u.role === 'warden') {
-                // Strictly isolate Warden view: Hide student navigation
-                if (studentNavGroup) studentNavGroup.style.display = 'none';
-                if (wardenNavGroup) wardenNavGroup.style.display = 'block';
-                if (roleSwitcher) roleSwitcher.style.display = 'none';
-                if (studentSelectWrap) studentSelectWrap.style.display = 'none';
+        const studentNavGroup = document.getElementById('sidebarStudentNavGroup');
+        const wardenNavGroup = document.getElementById('sidebarWardenNavGroup');
+        const roleSwitcher = document.getElementById('topbarRoleSwitcher');
+        const studentSelectWrap = document.getElementById('studentSelectWrap');
 
-                const topAuthText = document.getElementById('topAuthText');
-                if (topAuthText) topAuthText.textContent = `WARDEN: ${u.name.toUpperCase()}`;
-                switchMainView('warden');
-            } else if (u.role === 'student') {
-                window.currentStudentId = u.id;
-                // Strictly isolate Student view: Hide warden navigation
-                if (studentNavGroup) studentNavGroup.style.display = 'block';
-                if (wardenNavGroup) wardenNavGroup.style.display = 'none';
-                if (roleSwitcher) roleSwitcher.style.display = 'none';
-                if (studentSelectWrap) studentSelectWrap.style.display = 'none';
+        if (isWarden) {
+            // Strictly isolate Warden view: Hide student navigation
+            if (studentNavGroup) studentNavGroup.style.display = 'none';
+            if (wardenNavGroup) wardenNavGroup.style.display = 'block';
+            if (roleSwitcher) roleSwitcher.style.display = 'none';
+            if (studentSelectWrap) studentSelectWrap.style.display = 'none';
 
-                if (studentSelect) studentSelect.value = u.id;
-                const nameElem = document.getElementById('studentName');
-                const cardNameElem = document.getElementById('cardStudentName');
-                const avatarElem = document.getElementById('userAvatar');
-                const topAuthText = document.getElementById('topAuthText');
+            const topAuthText = document.getElementById('topAuthText');
+            const name = (u && u.name) ? u.name.toUpperCase() : 'DR. ROBERT VANCE';
+            if (topAuthText) topAuthText.textContent = `WARDEN: ${name}`;
+            switchMainView('warden');
+        } else {
+            // Student View
+            const sId = (u && u.id) ? u.id : 1;
+            window.currentStudentId = sId;
+            if (studentNavGroup) studentNavGroup.style.display = 'block';
+            if (wardenNavGroup) wardenNavGroup.style.display = 'none';
+            if (roleSwitcher) roleSwitcher.style.display = 'none';
+            if (studentSelectWrap) studentSelectWrap.style.display = 'none';
 
-                if (nameElem) nameElem.textContent = u.name;
-                if (cardNameElem) cardNameElem.textContent = u.name;
-                if (avatarElem) avatarElem.textContent = u.name.charAt(0);
-                if (topAuthText) topAuthText.textContent = `RESIDENT: ${u.name.toUpperCase()}`;
+            if (studentSelect) studentSelect.value = sId;
+            const nameElem = document.getElementById('studentName');
+            const cardNameElem = document.getElementById('cardStudentName');
+            const avatarElem = document.getElementById('userAvatar');
+            const topAuthText = document.getElementById('topAuthText');
 
-                switchMainView('student');
-            }
+            const sName = (u && u.name) ? u.name : 'Alex Johnson';
+            if (nameElem) nameElem.textContent = sName;
+            if (cardNameElem) cardNameElem.textContent = sName;
+            if (avatarElem) avatarElem.textContent = sName.charAt(0);
+            if (topAuthText) topAuthText.textContent = `RESIDENT: ${sName.toUpperCase()}`;
+
+            switchMainView('student');
         }
     }
 
@@ -1456,10 +1462,78 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.sendWardenQuickPrompt = (promptText) => {
         const input = document.getElementById('wardenAiInput');
-        if (input) {
-            input.value = promptText;
-            window.sendWardenChatMessage();
+        const tabInput = document.getElementById('tabWardenAiInput');
+        if (input) input.value = promptText;
+        if (tabInput) tabInput.value = promptText;
+
+        if (input) window.sendWardenChatMessage();
+        if (tabInput) window.sendTabWardenChatMessage();
+    };
+
+    window.sendTabWardenChatMessage = async () => {
+        const input = document.getElementById('tabWardenAiInput');
+        const chatBox = document.getElementById('tabWardenAiChatBox');
+        if (!input || !chatBox) return;
+
+        const text = input.value.trim();
+        if (!text) return;
+
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        const uBubble = document.createElement('div');
+        uBubble.className = 'chat-msg user';
+        uBubble.style.cssText = 'background: rgba(5, 150, 105, 0.25); color: white; border: 1px solid rgba(5, 150, 105, 0.4); padding: 0.6rem 0.8rem; border-radius: 8px; font-size: 0.82rem; margin-bottom: 0.5rem;';
+        uBubble.textContent = text;
+        chatBox.appendChild(uBubble);
+
+        input.value = '';
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        const typingElem = document.createElement('div');
+        typingElem.className = 'chat-msg agent';
+        typingElem.style.cssText = 'background: rgba(30, 41, 59, 0.8); color: #f8fafc; border: 1px solid rgba(255,255,255,0.1); padding: 0.6rem 0.8rem; border-radius: 8px; font-size: 0.82rem; margin-bottom: 0.5rem; opacity: 0.85;';
+        typingElem.innerHTML = `
+            <div style="color: #34d399; font-weight: 800; font-size: 0.68rem;">Warden Copilot Executing...</div>
+            <div style="margin-top:0.3rem;" class="skeleton-text skeleton-dark"></div>
+        `;
+        chatBox.appendChild(typingElem);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        try {
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: text,
+                    student_id: 1,
+                    role: 'warden'
+                })
+            });
+            const data = await res.json();
+            typingElem.remove();
+
+            const aBubble = document.createElement('div');
+            aBubble.className = 'chat-msg agent';
+            aBubble.style.cssText = 'background: rgba(30, 41, 59, 0.85); color: #f8fafc; border: 1px solid rgba(255,255,255,0.1); padding: 0.6rem 0.8rem; border-radius: 8px; font-size: 0.82rem; margin-bottom: 0.5rem;';
+
+            if (data.success) {
+                const agents = (data.agents_invoked || []).join(' + ') || 'Decision Agent';
+                aBubble.innerHTML = `
+                    <div style="color: #34d399; font-weight: 800; font-size: 0.68rem; margin-bottom: 0.2rem;">⚡ Action Executed via ${agents}</div>
+                    <div>${data.message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')}</div>
+                `;
+                showToast('Warden Command Executed!', 'success');
+                appCache.invalidate();
+                loadWardenDashboardData();
+            } else {
+                aBubble.innerHTML = `<div style="color: #ef4444; font-weight:700;">Notice: ${data.message}</div>`;
+            }
+            chatBox.appendChild(aBubble);
+        } catch (e) {
+            typingElem.remove();
+            showToast('Network error executing warden command', 'error');
         }
+        chatBox.scrollTop = chatBox.scrollHeight;
     };
 
     window.sendWardenChatMessage = async () => {

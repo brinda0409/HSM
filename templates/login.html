@@ -347,8 +347,8 @@
                     localStorage.setItem('shms_user', JSON.stringify(data.user));
                     showToast(`Authenticated as ${data.user.name}`, 'info');
                     setTimeout(() => {
-                        window.location.href = '/app';
-                    }, 400);
+                        window.location.href = '/app?role=' + (data.user.role || 'student');
+                    }, 300);
                 } else {
                     showToast(data.message || 'Login failed', 'error');
                 }
