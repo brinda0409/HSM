@@ -11,11 +11,11 @@ from utils.logger import logger
 
 class DecisionAgent:
     """
-    Decision Agent (Central Orchestrator):
-    - Parses intent & entities from raw student messages via Gemini / Heuristic NLU.
-    - Routes requests to 7 specialized worker agents (Complaint, Visitor, Room, Info, Leave, Report, Recommendation).
-    - Merges results for compound / multi-intent requests.
-    - Synthesizes friendly natural language response.
+    Decision Agent (Central AI Brain Orchestrator):
+    - Parses single or multiple user intents & entities via Gemini / Heuristic NLU.
+    - Routes requests to specialized worker agents (Complaint, Visitor, Room, Info, Leave, Report, Recommendation).
+    - Explains WHY it selected those agents and displays execution workflow.
+    - Merges agent responses for compound queries.
     - Logs execution audit trail in `chat_logs`.
     """
 
@@ -43,6 +43,7 @@ class DecisionAgent:
             "get_hostel_info": hostel_information_agent,
 
             "apply_leave": leave_agent,
+            "apply_outpass": leave_agent,
             "get_leave_status": leave_agent,
             "list_leaves": leave_agent,
             "approve_leave": leave_agent,
@@ -63,7 +64,7 @@ class DecisionAgent:
 
     def process_chat(self, user_message, student_id=1, role="student"):
         """
-        Orchestrates full chat pipeline end-to-end.
+        Orchestrates full chat pipeline end-to-end with multi-intent detection and workflow explanation.
         
         :param user_message: raw string typed by student or warden
         :param student_id: int student ID
@@ -80,14 +81,14 @@ class DecisionAgent:
                 "detected_intents": []
             }
 
-        # Step 1: Intent & Entity Parsing
+        # Step 1: Detect single or multiple intents & entities
         parsed_intents = gemini_service.parse_intent_and_entities(user_message)
 
         agents_invoked = []
         agent_results = []
         detected_intent_names = []
 
-        # Step 2: Route to specialized agents
+        # Step 2: Route to specialized worker agents
         for intent_item in parsed_intents:
             intent_name = intent_item.get("intent", "unknown")
             entities = intent_item.get("entities", {})
@@ -119,10 +120,36 @@ class DecisionAgent:
                 else:
                     logger.warning(f"[DecisionAgent] Unmapped intent '{intent_name}'")
 
-        # Step 3: Response Synthesis
-        final_response_text = gemini_service.synthesize_response(user_message, agent_results)
+        # Step 3: Merge responses and synthesize response
+        synthesized_text = gemini_service.synthesize_response(user_message, agent_results)
 
-        # Step 4: Audit Logging into Database `chat_logs`
+        # Step 4: Build Decision Agent Multi-Agent Execution Explanation
+        intents_formatted = ", ".join([f"`{i}`" for i in detected_intent_names])
+        agents_formatted = ", ".join([f"`{a}`" for a in agents_invoked])
+
+        if len(agents_invoked) > 1:
+            reasoning = f"Multiple distinct intents detected ({intents_formatted}) — routed in parallel to specialized worker agents."
+        else:
+            first_intent = detected_intent_names[0] if detected_intent_names else "general_query"
+            first_agent = agents_invoked[0] if agents_invoked else "decision_agent"
+            reasoning = f"Intent `{first_intent}` identified and delegated to `{first_agent}` for database execution."
+
+        # Attach Decision Agent Multi-Agent Workflow Header if not already present
+        if "Decision Agent" not in synthesized_text:
+            workflow_header = (
+                f"🧠 **Decision Agent (Central AI Brain Orchestrator)**\n\n"
+                f"🔄 **Multi-Agent Orchestration Workflow**:\n"
+                f"• 👤 **Student Query**: *\"{user_message}\"*\n"
+                f"• 🎯 **Detected Intent(s)**: {intents_formatted}\n"
+                f"• 🤖 **Selected Agent(s)**: {agents_formatted}\n"
+                f"• 💡 **Routing Rationale**: {reasoning}\n\n"
+                f"---\n\n"
+            )
+            final_response_text = workflow_header + synthesized_text
+        else:
+            final_response_text = synthesized_text
+
+        # Step 5: Audit Logging into Database `chat_logs`
         try:
             execute_query(
                 """INSERT INTO chat_logs (student_id, message, detected_intent, agent_invoked, response)
