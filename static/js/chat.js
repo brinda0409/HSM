@@ -222,7 +222,19 @@ document.addEventListener('DOMContentLoaded', () => {
         scrollToBottom();
     }
 
-    async function sendWardenChatMessage() {
+    window.toggleWardenChatWidget = function() {
+        const drawer = document.getElementById('wardenChatDrawer');
+        if (!drawer) return;
+        if (drawer.style.display === 'none' || !drawer.style.display) {
+            drawer.style.display = 'flex';
+            const input = document.getElementById('wardenAiInput');
+            if (input) input.focus();
+        } else {
+            drawer.style.display = 'none';
+        }
+    };
+
+    window.sendWardenChatMessage = async function() {
         const wardenInput = document.getElementById('wardenAiInput');
         const wardenChatBox = document.getElementById('wardenAiChatBox');
         if (!wardenInput || !wardenChatBox) return;

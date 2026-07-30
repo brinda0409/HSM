@@ -149,6 +149,9 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('sidebarProfileTitle').textContent = 'STUDENT PORTAL';
             document.getElementById('sidebarProfileSub').textContent = 'Active Resident';
 
+            const floatWidget = document.getElementById('wardenChatFloatingWidget');
+            if (floatWidget) floatWidget.style.display = 'none';
+
             loadStudentPortalData();
 
             if (targetTab === 'complaints') {
@@ -162,6 +165,9 @@ document.addEventListener('DOMContentLoaded', () => {
             viewWarden.style.display = 'block';
             btnModeStudent.classList.remove('active');
             btnModeWarden.classList.add('active');
+
+            const floatWidget = document.getElementById('wardenChatFloatingWidget');
+            if (floatWidget) floatWidget.style.display = 'block';
 
             document.getElementById('studentSelectWrap').style.display = 'none';
             document.getElementById('topAuthText').textContent = 'WARDEN AUTHENTICATED';
