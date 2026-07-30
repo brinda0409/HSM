@@ -21,11 +21,18 @@ from routes.report_routes import report_bp
 
 def create_app():
     """Factory function to configure and initialize Flask Application."""
-    app = Flask(__name__, template_folder="templates", static_folder="static")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    templates_path = os.path.join(base_dir, "templates")
+    static_path = os.path.join(base_dir, "static")
+
+    app = Flask(__name__, template_folder=templates_path, static_folder=static_path)
     app.secret_key = os.getenv("SECRET_KEY", "shms_secure_session_key_2026")
 
-    # Initialize Database Schema & Seed Data if not present
-    init_db()
+    # Safe Database Schema & Seed Data Initialization for Serverless Environments
+    try:
+        init_db()
+    except Exception as e:
+        logger.error(f"[App] Non-fatal database initialization warning: {e}")
 
     # Register Error Handlers
     register_error_handlers(app)
