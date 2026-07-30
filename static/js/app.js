@@ -414,7 +414,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.success) {
                 const agentsList = (data.agents_invoked || []).join(' + ') || 'Decision Agent';
                 appendChatBubble('agent', data.message, timeStr, `Orchestrated via ${agentsList}`);
-                appCache.invalidate(`complaints_${sId}`);
+                appCache.invalidate();
                 loadStudentPortalData(true);
             } else {
                 if (optId) removeOptimisticStudentComplaint(optId);

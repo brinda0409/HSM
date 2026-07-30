@@ -85,11 +85,12 @@ class LeaveAgent:
         next_num = (count_row["cnt"] if count_row else 0) + 1
         leave_id = f"LV-{year}-{next_num:04d}"
 
+        now_str = now.strftime("%Y-%m-%d %H:%M:%S")
         try:
             execute_query(
-                """INSERT INTO leaves (leave_id, student_id, leave_type, start_date, end_date, reason, status)
-                   VALUES (?, ?, ?, ?, ?, ?, 'Pending')""",
-                (leave_id, student_id, leave_type, start_date, end_date, reason)
+                """INSERT INTO leaves (leave_id, student_id, leave_type, start_date, end_date, reason, status, applied_at)
+                   VALUES (?, ?, ?, ?, ?, ?, 'Pending', ?)""",
+                (leave_id, student_id, leave_type, start_date, end_date, reason, now_str)
             )
 
             leave_data = {
@@ -100,7 +101,7 @@ class LeaveAgent:
                 "end_date": end_date,
                 "reason": reason,
                 "status": "Pending",
-                "applied_at": now.strftime("%Y-%m-%d %H:%M:%S")
+                "applied_at": now_str
             }
 
             logger.info(f"[LeaveAgent] Leave applied successfully: {leave_id}")
@@ -124,7 +125,7 @@ class LeaveAgent:
         if leave_id:
             row = query_one("SELECT l.*, COALESCE(s.name, 'Student #' || l.student_id) as student_name FROM leaves l LEFT JOIN students s ON CAST(l.student_id AS TEXT) = CAST(s.student_id AS TEXT) WHERE l.leave_id = ?", (leave_id,))
         elif student_id:
-            row = query_one("SELECT l.*, COALESCE(s.name, 'Student #' || l.student_id) as student_name FROM leaves l LEFT JOIN students s ON CAST(l.student_id AS TEXT) = CAST(s.student_id AS TEXT) WHERE CAST(l.student_id AS TEXT) = CAST(? AS TEXT) ORDER BY l.applied_at DESC LIMIT 1", (student_id,))
+            row = query_one("SELECT l.*, COALESCE(s.name, 'Student #' || l.student_id) as student_name FROM leaves l LEFT JOIN students s ON CAST(l.student_id AS TEXT) = CAST(s.student_id AS TEXT) WHERE CAST(l.student_id AS TEXT) = CAST(? AS TEXT) ORDER BY l.leave_id DESC LIMIT 1", (student_id,))
         else:
             row = None
 
@@ -146,9 +147,9 @@ class LeaveAgent:
     def list_leaves(self, student_id=None):
         """Lists leave records for student, or all leave records if student_id is None."""
         if student_id:
-            rows = query_all("SELECT l.*, COALESCE(s.name, 'Student #' || l.student_id) as student_name, r.room_no FROM leaves l LEFT JOIN students s ON CAST(l.student_id AS TEXT) = CAST(s.student_id AS TEXT) LEFT JOIN rooms r ON s.room_id = r.room_id WHERE CAST(l.student_id AS TEXT) = CAST(? AS TEXT) ORDER BY l.applied_at DESC", (student_id,))
+            rows = query_all("SELECT l.*, COALESCE(s.name, 'Student #' || l.student_id) as student_name, r.room_no FROM leaves l LEFT JOIN students s ON CAST(l.student_id AS TEXT) = CAST(s.student_id AS TEXT) LEFT JOIN rooms r ON s.room_id = r.room_id WHERE CAST(l.student_id AS TEXT) = CAST(? AS TEXT) ORDER BY l.leave_id DESC", (student_id,))
         else:
-            rows = query_all("SELECT l.*, COALESCE(s.name, 'Student #' || l.student_id) as student_name, r.room_no FROM leaves l LEFT JOIN students s ON CAST(l.student_id AS TEXT) = CAST(s.student_id AS TEXT) LEFT JOIN rooms r ON s.room_id = r.room_id ORDER BY l.applied_at DESC")
+            rows = query_all("SELECT l.*, COALESCE(s.name, 'Student #' || l.student_id) as student_name, r.room_no FROM leaves l LEFT JOIN students s ON CAST(l.student_id AS TEXT) = CAST(s.student_id AS TEXT) LEFT JOIN rooms r ON s.room_id = r.room_id ORDER BY l.leave_id DESC")
 
         return {
             "success": True,
