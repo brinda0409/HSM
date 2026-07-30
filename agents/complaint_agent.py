@@ -4,12 +4,30 @@ from utils.logger import logger
 
 class ComplaintAgent:
     """
-    Complaint Management Agent:
-    Handles registration, categorization, priority assignment, status tracking, and ID generation (CMP-YYYY-NNNN).
+    Enhanced Autonomous Complaint Management Agent:
+    Executes an 8-step intelligent pipeline:
+    Register -> Categorize -> Find Similar Complaints -> Assign Severity -> 
+    Estimate Resolution Time -> Suggest Technician -> Recommend Action -> Explain Why
     """
 
     CATEGORIES = ["Electrical", "Plumbing", "Furniture", "Internet", "Cleanliness", "Other"]
-    PRIORITIES = ["Low", "Medium", "High", "Urgent"]
+    SEVERITIES = ["Low", "Medium", "High", "Urgent"]
+
+    TECHNICIAN_DIRECTORY = {
+        "Electrical": {"name": "Technician Suresh Kumar", "dept": "Electrical Maintenance", "ext": "102"},
+        "Plumbing": {"name": "Technician Ramesh Patel", "dept": "Plumbing Operations", "ext": "104"},
+        "Internet": {"name": "Network Engineer Ankit Sharma", "dept": "IT Helpdesk", "ext": "108"},
+        "Furniture": {"name": "Carpentry Specialist Mohan Lal", "dept": "Facilities Dept", "ext": "110"},
+        "Cleanliness": {"name": "Supervisor Sunita Devi", "dept": "Sanitation Dept", "ext": "112"},
+        "Other": {"name": "Campus Maintenance Desk", "dept": "General Services", "ext": "100"}
+    }
+
+    ETA_MAP = {
+        "Urgent": "2 Hours",
+        "High": "4 Hours",
+        "Medium": "12 Hours",
+        "Low": "24 Hours"
+    }
 
     def __init__(self):
         self.name = "complaint_agent"
@@ -55,23 +73,57 @@ class ComplaintAgent:
 
     def register_complaint(self, student_id, entities):
         """
-        Registers a new complaint with auto-categorization and priority generation.
+        Executes the 8-step intelligent complaint processing pipeline.
         """
         description = entities.get("description", "No description provided.")
-        category = entities.get("category") or self._auto_categorize(description)
-        priority = entities.get("priority") or self._auto_prioritize(category, description)
 
-        # Generate CMP-YYYY-NNNN
+        # Step 1: Register & Generate CMP-YYYY-NNNN ID
         year = datetime.now().year
         count_row = query_one("SELECT COUNT(*) as cnt FROM complaints WHERE complaint_id LIKE ?", (f"CMP-{year}-%",))
         next_num = (count_row["cnt"] if count_row else 0) + 1
         complaint_id = f"CMP-{year}-{next_num:04d}"
 
+        # Fetch student & room info for context
+        student = query_one("""SELECT s.*, r.room_no, r.block 
+                               FROM students s 
+                               LEFT JOIN rooms r ON s.room_id = r.room_id 
+                               WHERE s.student_id = ?""", (student_id,))
+        s_name = student["name"] if student else f"Student #{student_id}"
+        room_no = student["room_no"] if student else "Hostel Room"
+
+        # Step 2: Categorize
+        category = entities.get("category") or self._auto_categorize(description)
+
+        # Step 3: Find Similar Complaints
+        similar_rows = query_all(
+            "SELECT complaint_id, category, description, status FROM complaints WHERE category = ? AND complaint_id != ? ORDER BY created_at DESC LIMIT 3",
+            (category, complaint_id)
+        )
+        similar_ids = [r["complaint_id"] for r in similar_rows]
+        similar_summary = f"Found {len(similar_ids)} similar complaint(s) ({', '.join(similar_ids)})" if similar_ids else "No prior similar complaints found."
+
+        # Step 4: Assign Severity
+        severity = entities.get("priority") or self._auto_prioritize(category, description)
+
+        # Step 5: Estimate Resolution Time
+        eta = self.ETA_MAP.get(severity, "12 Hours")
+
+        # Step 6: Suggest Technician
+        tech_info = self.TECHNICIAN_DIRECTORY.get(category, self.TECHNICIAN_DIRECTORY["Other"])
+        tech_display = f"**{tech_info['name']}** ({tech_info['dept']}, Ext: {tech_info['ext']})"
+
+        # Step 7: Recommend Action
+        recommended_action = f"Dispatch {tech_info['name']} to **{room_no}** to inspect and resolve {category.lower()} issue."
+
+        # Step 8: Explain Why
+        explain_why = f"{severity} severity assigned based on {category.lower()} impact criteria. Resolution ETA set to {eta} according to {tech_info['dept']} SLA."
+
+        # Save to database
         try:
             execute_query(
                 """INSERT INTO complaints (complaint_id, student_id, category, description, priority, status)
                    VALUES (?, ?, ?, ?, ?, 'Open')""",
-                (complaint_id, student_id, category, description, priority)
+                (complaint_id, student_id, category, description, severity)
             )
 
             complaint_data = {
@@ -79,17 +131,32 @@ class ComplaintAgent:
                 "student_id": student_id,
                 "category": category,
                 "description": description,
-                "priority": priority,
+                "priority": severity,
                 "status": "Open",
+                "similar_complaints": similar_ids,
+                "eta": eta,
+                "technician": tech_info,
+                "recommended_action": recommended_action,
+                "explain_why": explain_why,
                 "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
 
-            logger.info(f"[ComplaintAgent] Complaint registered successfully: {complaint_id}")
+            full_msg = f"✅ **Complaint Registered**: **{complaint_id}**\n\n" \
+                       f"🔄 **Autonomous Agent Processing Pipeline**:\n\n" \
+                       f"• 🏷️ **Category**: **{category}**\n" \
+                       f"• 🔍 **Find Similar Complaints**: {similar_summary}\n" \
+                       f"• ⚡ **Assign Severity**: **{severity}**\n" \
+                       f"• ⏱️ **Estimate Resolution Time**: **{eta}**\n" \
+                       f"• 👤 **Suggest Technician**: {tech_display}\n" \
+                       f"• 💡 **Recommend Action**: {recommended_action}\n" \
+                       f"• 🧠 **Explain Why**: {explain_why}"
+
+            logger.info(f"[ComplaintAgent] Pipeline executed successfully for {complaint_id}")
             return {
                 "success": True,
                 "agent": self.name,
                 "data": complaint_data,
-                "message": f"Complaint {complaint_id} registered successfully under category {category} with {priority} priority."
+                "message": full_msg
             }
         except Exception as e:
             logger.error(f"[ComplaintAgent] Failed to register complaint: {e}")
@@ -114,7 +181,7 @@ class ComplaintAgent:
                 "success": True,
                 "agent": self.name,
                 "data": row,
-                "message": f"Found complaint {row['complaint_id']} (Status: {row['status']})."
+                "message": f"Found complaint {row['complaint_id']} (Status: {row['status']}, Category: {row['category']}, Priority: {row['priority']})."
             }
         else:
             return {

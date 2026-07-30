@@ -358,10 +358,7 @@ Response:
             msg = res.get("message", "")
 
             if agent == "complaint_agent":
-                if success:
-                    responses.append(f"✅ Complaint registered successfully! Reference ID: **{data.get('complaint_id')}**. Priority level set to **{data.get('priority')}** for category **{data.get('category')}**.")
-                else:
-                    responses.append(f"⚠️ Could not register complaint: {msg}")
+                responses.append(msg)
 
             elif agent == "visitor_agent":
                 if success:
