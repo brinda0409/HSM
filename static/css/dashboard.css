@@ -29,12 +29,17 @@
     border-bottom-color: var(--mint-dark);
 }
 
+.tab-content {
+    width: 100%;
+}
+
 .table-container {
     background: #ffffff;
     border: 1px solid var(--card-border);
     border-radius: 16px;
     box-shadow: var(--card-shadow);
     overflow-x: auto;
+    width: 100%;
 }
 
 .data-table {
