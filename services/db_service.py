@@ -7,7 +7,7 @@ try:
     import psycopg2
     from psycopg2.extras import RealDictCursor
     HAS_PSYCOPG2 = True
-except ImportError:
+except Exception:
     HAS_PSYCOPG2 = False
 
 DEFAULT_DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database", "hostel.db")
