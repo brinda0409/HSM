@@ -63,6 +63,8 @@ def create_app():
     @app.route("/app")
     @app.route("/portal")
     @app.route("/dashboard")
+    @app.route("/warden")
+    @app.route("/warden/dashboard")
     def app_portal():
         """Unified Platform SPA Engine for Authenticated Students & Wardens"""
         return render_template("index.html")

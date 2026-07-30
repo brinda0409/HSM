@@ -73,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     checkAuthSession();
 
     async function checkAuthSession() {
+        const pathStr = (window.location.pathname || '').toLowerCase();
         const searchStr = (window.location.search || '').toLowerCase();
         const urlParams = new URLSearchParams(window.location.search);
         const paramRole = urlParams.get('role');
@@ -98,7 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const isWarden = (paramRole === 'warden') || 
+        const isWarden = (pathStr.includes('warden')) ||
+                         (paramRole === 'warden') || 
                          (sessionRole === 'warden') || 
                          (searchStr.includes('warden')) || 
                          (u && u.role === 'warden') || 
