@@ -6,13 +6,14 @@ from agents.room_agent import room_agent
 from agents.hostel_information_agent import hostel_information_agent
 from agents.leave_agent import leave_agent
 from agents.report_agent import report_agent
+from agents.recommendation_agent import recommendation_agent
 from utils.logger import logger
 
 class DecisionAgent:
     """
     Decision Agent (Central Orchestrator):
     - Parses intent & entities from raw student messages via Gemini / Heuristic NLU.
-    - Routes requests to specialized worker agents (Complaint, Visitor, Room, Info, Leave, Report).
+    - Routes requests to 7 specialized worker agents (Complaint, Visitor, Room, Info, Leave, Report, Recommendation).
     - Merges results for compound / multi-intent requests.
     - Synthesizes friendly natural language response.
     - Logs execution audit trail in `chat_logs`.
@@ -51,18 +52,25 @@ class DecisionAgent:
             "generate_report": report_agent,
             "get_report_summary": report_agent,
             "export_pdf_report": report_agent,
-            "get_report": report_agent
+            "get_report": report_agent,
+
+            "get_recommendations": recommendation_agent,
+            "recommend_room": recommendation_agent,
+            "get_suggestions": recommendation_agent,
+            "get_reminders": recommendation_agent,
+            "get_warden_recommendations": recommendation_agent
         }
 
-    def process_chat(self, user_message, student_id=1):
+    def process_chat(self, user_message, student_id=1, role="student"):
         """
         Orchestrates full chat pipeline end-to-end.
         
-        :param user_message: raw string typed by student
+        :param user_message: raw string typed by student or warden
         :param student_id: int student ID
+        :param role: str "student" or "warden"
         :return: dict response containing final natural message and execution metadata
         """
-        logger.info(f"[DecisionAgent] Processing message from student {student_id}: '{user_message}'")
+        logger.info(f"[DecisionAgent] Processing message from student {student_id} (role={role}): '{user_message}'")
 
         if not user_message or not user_message.strip():
             return {
@@ -90,7 +98,7 @@ class DecisionAgent:
                     "success": True,
                     "agent": "decision_agent",
                     "data": {},
-                    "message": "I'm not quite sure what you'd like to do. You can ask me about raising complaints, applying for leave, registering visitors, checking room status, or hostel mess/curfew timings!"
+                    "message": "I'm not quite sure what you'd like to do. You can ask me about recommendations, raising complaints, applying for leave, registering visitors, checking room status, or hostel mess/curfew timings!"
                 }
                 agent_results.append(clarifying_res)
                 agents_invoked.append("decision_agent")
@@ -100,7 +108,8 @@ class DecisionAgent:
                     worker_req = {
                         "intent": intent_name,
                         "entities": entities,
-                        "student_id": student_id
+                        "student_id": student_id,
+                        "role": role
                     }
                     logger.info(f"[DecisionAgent] Delegating to {target_agent.name} with intent '{intent_name}'")
                     res = target_agent.process_request(worker_req)

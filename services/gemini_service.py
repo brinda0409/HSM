@@ -306,6 +306,13 @@ Respond ONLY with valid JSON inside ```json ``` block or raw JSON string. Do not
                 }
             })
 
+        # 7. Recommendation / Suggestion / Reminder Check
+        if any(w in msg_lower for w in ["recommend", "suggestion", "suggest", "reminder", "advice", "what should i do"]):
+            intents.append({
+                "intent": "get_recommendations",
+                "entities": {}
+            })
+
         # If no specific intent found
         if not intents:
             intents.append({
@@ -386,6 +393,9 @@ Response:
 
             elif agent == "report_agent":
                 responses.append(f"📊 {msg}")
+
+            elif agent == "recommendation_agent":
+                responses.append(f"{msg}")
 
             elif agent == "decision_agent":
                 responses.append(msg)
