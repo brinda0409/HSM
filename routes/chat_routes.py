@@ -10,11 +10,16 @@ def chat():
     """
     POST /api/chat
     Main conversational entry point handled by Decision Agent.
-    Body: {"message": "...", "student_id": 1}
+    Body: {"message": "...", "student_id": 1, "role": "student" | "warden"}
     """
     data = request.get_json() or {}
     message = data.get("message")
     student_id = data.get("student_id", 1)
+    role = data.get("role", "student")
+    if isinstance(role, str):
+        role = role.strip().lower()
+    else:
+        role = "student"
 
     if not message:
         return jsonify({
@@ -28,8 +33,8 @@ def chat():
     except (ValueError, TypeError):
         student_id = 1
 
-    logger.info(f"API Call POST /api/chat - Student ID: {student_id}")
-    result = decision_agent.process_chat(message, student_id=student_id)
+    logger.info(f"API Call POST /api/chat - Student ID: {student_id}, Role: {role}")
+    result = decision_agent.process_chat(message, student_id=student_id, role=role)
     return jsonify(result), 200
 
 @chat_bp.route("/api/chat_logs", methods=["GET"])

@@ -221,11 +221,19 @@ class TestSHMSSystem(unittest.TestCase):
 
     def test_15_recommendation_agent(self):
         """Test Recommendation Agent (Agent #7) for student & warden suggestions."""
-        r_rec = self.client.post("/api/chat", json={"message": "give me recommendations", "student_id": 1})
+        # Student Recommendations
+        r_rec = self.client.post("/api/chat", json={"message": "give me recommendations", "student_id": 1, "role": "student"})
         self.assertEqual(r_rec.status_code, 200)
         self.assertTrue(r_rec.get_json()["success"])
         self.assertIn("recommendation_agent", r_rec.get_json()["agents_invoked"])
         self.assertIn("Personalized AI Recommendations", r_rec.get_json()["message"])
+
+        # Warden Recommendations
+        r_w_rec = self.client.post("/api/chat", json={"message": "any suggestions for me?", "student_id": 1, "role": "warden"})
+        self.assertEqual(r_w_rec.status_code, 200)
+        self.assertTrue(r_w_rec.get_json()["success"])
+        self.assertIn("recommendation_agent", r_w_rec.get_json()["agents_invoked"])
+        self.assertIn("Warden Executive AI Recommendations", r_w_rec.get_json()["message"])
 
 if __name__ == "__main__":
     unittest.main()
