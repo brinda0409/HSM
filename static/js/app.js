@@ -831,29 +831,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchWardenRooms() {
         const tbody = document.getElementById('roomsTableBody');
-        const cached = appCache.get('warden_rooms');
-        if (cached) {
-            renderWardenRoomsTable(cached);
-            return;
-        }
+        if (!tbody) return;
 
-        renderTableSkeleton('roomsTableBody', 7, 3);
+        renderTableSkeleton('roomsTableBody', 8, 3);
         try {
             const res = await fetch('/api/rooms');
             const result = await res.json();
             if (result.success && result.data.rooms) {
-                appCache.set('warden_rooms', result.data.rooms);
-                renderWardenRoomsTable(result.data.rooms);
+                renderWardenRoomsTable(result.data.rooms, result.data.transfers || []);
             }
         } catch (e) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#ef4444; padding:1rem;">Failed to load room data.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#ef4444; padding:1rem;">Failed to load room data.</td></tr>';
         }
     }
 
-    function renderWardenRoomsTable(rooms) {
+    function renderWardenRoomsTable(rooms, allTransfers = []) {
         const tbody = document.getElementById('roomsTableBody');
         if (!tbody) return;
         tbody.innerHTML = '';
+
         rooms.forEach(r => {
             const ai = r.ai_decision || {
                 health_score: 100, recommendation: 'Optimal Choice', confidence: 96,
@@ -865,17 +861,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const healthBg = ai.health_score >= 90 ? '#ecfdf5' : (ai.health_score >= 70 ? '#fffbeb' : '#fef2f2');
             const healthBorder = ai.health_score >= 90 ? '#a7f3d0' : (ai.health_score >= 70 ? '#fde68a' : '#fca5a5');
 
-            // Format pending room transfer requests column
-            const transfers = r.pending_transfers || [];
+            // Find all transfer requests targeting this room OR originating from this room
+            const roomNoClean = (r.room_no || '').replace('-', '').toUpperCase();
+            
+            const matchingTransfers = (allTransfers || []).filter(t => {
+                const toClean = (t.to_room_no || '').replace('-', '').toUpperCase();
+                const fromClean = (t.from_room_no || '').replace('-', '').toUpperCase();
+                return toClean === roomNoClean || fromClean === roomNoClean;
+            });
+
             let transferHtml = '<span style="color:#94a3b8; font-size:0.75rem;">None</span>';
 
-            if (transfers.length > 0) {
-                const transferItems = transfers.map(t => {
+            if (matchingTransfers.length > 0) {
+                const transferItems = matchingTransfers.map(t => {
                     if (t.status === 'Pending') {
                         return `
                             <div style="background:#fef3c7; border:1px solid #fde68a; padding:0.35rem 0.5rem; border-radius:6px; margin-bottom:0.25rem; font-size:0.75rem;">
                                 <strong>📩 ${t.student_name}</strong> requested transfer to <strong>${t.to_room_no}</strong><br>
-                                <span style="font-size:0.7rem; color:#64748b;">From: ${t.from_room_no}</span>
+                                <span style="font-size:0.7rem; color:#64748b;">From: ${t.from_room_no || 'Current Room'}</span>
                                 <div style="margin-top:0.3rem; display:flex; gap:0.25rem;">
                                     <button class="btn-action btn-approve" style="font-size:0.68rem; padding:0.15rem 0.4rem;" onclick="updateRoomTransferStatus(${t.transfer_id}, 'Approved')">Approve</button>
                                     <button class="btn-action btn-reject" style="font-size:0.68rem; padding:0.15rem 0.4rem;" onclick="updateRoomTransferStatus(${t.transfer_id}, 'Rejected')">Reject</button>

@@ -349,10 +349,10 @@ class RoomAgent:
 
     def list_transfer_requests(self):
         """Lists all pending & historical room transfer requests for Warden Dashboard."""
-        rows = query_all("""SELECT t.*, s.name as student_name, s.roll_no, r.capacity, r.occupied_count, r.block
+        rows = query_all("""SELECT t.*, COALESCE(s.name, 'Student #' || t.student_id) as student_name, s.roll_no, r.capacity, r.occupied_count, r.block
                             FROM room_transfers t
-                            JOIN students s ON t.student_id = s.student_id
-                            LEFT JOIN rooms r ON t.to_room_no = r.room_no
+                            LEFT JOIN students s ON CAST(t.student_id AS TEXT) = CAST(s.student_id AS TEXT)
+                            LEFT JOIN rooms r ON UPPER(TRIM(t.to_room_no)) = UPPER(TRIM(r.room_no))
                             ORDER BY t.transfer_id DESC""")
         
         transfers_with_ai = []
