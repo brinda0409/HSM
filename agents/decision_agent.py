@@ -7,13 +7,14 @@ from agents.hostel_information_agent import hostel_information_agent
 from agents.leave_agent import leave_agent
 from agents.report_agent import report_agent
 from agents.recommendation_agent import recommendation_agent
+from agents.notification_agent import notification_agent
 from utils.logger import logger
 
 class DecisionAgent:
     """
     Decision Agent (Central AI Brain Orchestrator):
     - Parses single or multiple user intents & entities via Gemini / Heuristic NLU.
-    - Routes requests to specialized worker agents (Complaint, Visitor, Room, Info, Leave, Report, Recommendation).
+    - Routes requests to specialized worker agents (Complaint, Visitor, Room, Info, Leave, Report, Recommendation, Notification).
     - Explains WHY it selected those agents and displays execution workflow.
     - Merges agent responses for compound queries.
     - Logs execution audit trail in `chat_logs`.
@@ -59,7 +60,12 @@ class DecisionAgent:
             "recommend_room": recommendation_agent,
             "get_suggestions": recommendation_agent,
             "get_reminders": recommendation_agent,
-            "get_warden_recommendations": recommendation_agent
+            "get_warden_recommendations": recommendation_agent,
+
+            "get_notification_recommendation": notification_agent,
+            "send_notification": notification_agent,
+            "get_notifications": notification_agent,
+            "notify_users": notification_agent
         }
 
     def process_chat(self, user_message, student_id=1, role="student"):

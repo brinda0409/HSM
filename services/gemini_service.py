@@ -316,6 +316,13 @@ Respond ONLY with valid JSON inside ```json ``` block or raw JSON string. Do not
                 "entities": {}
             })
 
+        # 8. Smart Notification Assistant Check
+        if any(w in msg_lower for w in ["notify", "notification", "notifications", "alert", "broadcast", "who to notify", "send notification", "smart notification", "announcement"]):
+            intents.append({
+                "intent": "get_notification_recommendation",
+                "entities": {}
+            })
+
         # If no specific intent found
         if not intents:
             intents.append({
@@ -333,7 +340,7 @@ Respond ONLY with valid JSON inside ```json ``` block or raw JSON string. Do not
         # If single worker agent returned a multi-step agentic pipeline message, preserve it directly!
         if len(agent_results) == 1:
             for res in agent_results:
-                if res.get("agent") in ["leave_agent", "complaint_agent", "visitor_agent", "room_agent", "hostel_information_agent", "report_agent"] and res.get("message") and ("Autonomous" in res.get("message") or "Pipeline" in res.get("message") or "Policy Interpretation" in res.get("message") or "Analytics" in res.get("message")):
+                if res.get("agent") in ["leave_agent", "complaint_agent", "visitor_agent", "room_agent", "hostel_information_agent", "report_agent", "notification_agent"] and res.get("message") and ("Autonomous" in res.get("message") or "Pipeline" in res.get("message") or "Policy Interpretation" in res.get("message") or "Analytics" in res.get("message") or "Notification" in res.get("message")):
                     return res.get("message")
 
         if self.model:
@@ -366,7 +373,7 @@ Response:
             data = res.get("data", {})
             msg = res.get("message", "")
 
-            if agent in ["complaint_agent", "leave_agent", "visitor_agent", "room_agent", "hostel_information_agent", "report_agent"]:
+            if agent in ["complaint_agent", "leave_agent", "visitor_agent", "room_agent", "hostel_information_agent", "report_agent", "notification_agent"]:
                 responses.append(msg)
 
             elif agent == "visitor_agent":
