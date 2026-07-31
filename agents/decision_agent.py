@@ -1,5 +1,6 @@
 from services.gemini_service import gemini_service
 from services.db_service import execute_query
+from services.collaboration_engine import collaboration_engine
 from agents.complaint_agent import complaint_agent
 from agents.visitor_agent import visitor_agent
 from agents.room_agent import room_agent
@@ -15,9 +16,8 @@ class DecisionAgent:
     Decision Agent (Central AI Brain Orchestrator):
     - Parses single or multiple user intents & entities via Gemini / Heuristic NLU.
     - Routes requests to specialized worker agents (Complaint, Visitor, Room, Info, Leave, Report, Recommendation, Notification).
-    - Explains WHY it selected those agents and displays execution workflow.
-    - Merges agent responses for compound queries.
-    - Logs execution audit trail in `chat_logs`.
+    - Multi-Agent Collaboration Engine Layer: Shares context between agents, collects outputs, and synthesizes unified AI response.
+    - Displays 'AI Agent Collaboration' Flow Diagram and expandable 'Agent Collaboration Details' Panel.
     """
 
     def __init__(self):
@@ -129,35 +129,14 @@ class DecisionAgent:
         # Step 3: Merge responses and synthesize response
         synthesized_text = gemini_service.synthesize_response(user_message, agent_results)
 
-        # Step 4: Build Decision Agent Multi-Agent Execution Flow Diagram
-        intents_formatted = ", ".join([f"**{i}**" for i in detected_intent_names])
-        agents_formatted = ", ".join([f"**{a}**" for a in agents_invoked])
+        # Step 4: Multi-Agent Collaboration Engine Layer
+        collaboration_card = collaboration_engine.build_collaboration_card(user_message, detected_intent_names, agent_results, agents_invoked)
 
-        if len(agents_invoked) > 1:
-            reasoning = f"Multiple intents detected ({intents_formatted}) — query partitioned and delegated concurrently across worker agents."
+        # If a single worker agent like leave_agent or complaint_agent already output its own card, prepend collaboration card
+        if len(agents_invoked) == 1 and ("Autonomous" in synthesized_text or "Pipeline" in synthesized_text or "Policy Interpretation" in synthesized_text or "Analytics" in synthesized_text or "Notification" in synthesized_text):
+            final_response_text = f"{synthesized_text}\n\n{collaboration_card}"
         else:
-            first_intent = detected_intent_names[0] if detected_intent_names else "general_query"
-            first_agent = agents_invoked[0] if agents_invoked else "decision_agent"
-            reasoning = f"Single intent **{first_intent}** recognized — routed to **{first_agent}** for execution."
-
-        # If a single worker agent like leave_agent or complaint_agent already output its own card, output clean workflow
-        if len(agents_invoked) == 1 and ("Autonomous" in synthesized_text or "Pipeline" in synthesized_text):
-            final_response_text = synthesized_text
-        else:
-            workflow_diagram = (
-                f"🧠 **Decision Agent (Central AI Brain)**\n\n"
-                f"📥 **Student Query**\n*\"{user_message}\"*\n"
-                f"↓\n"
-                f"🎯 **Detected Intents**\n{intents_formatted}\n"
-                f"↓\n"
-                f"🤖 **Agents Selected**\n{agents_formatted}\n"
-                f"↓\n"
-                f"💡 **Routing Rationale**\n{reasoning}\n"
-                f"↓\n"
-                f"🏁 **Final AI Response**:\n"
-                f"{synthesized_text}"
-            )
-            final_response_text = workflow_diagram
+            final_response_text = f"{synthesized_text}\n\n{collaboration_card}"
 
         # Step 5: Audit Logging into Database `chat_logs`
         try:
