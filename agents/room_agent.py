@@ -6,7 +6,8 @@ class RoomAgent:
     Autonomous AI Room Management Agent:
     Performs multi-factor room health analysis, maintenance conflict detection (Complaint Agent), 
     occupancy optimization, intelligent best-room matching algorithms, 
-    suitability scoring, confidence ratings, and Warden AI Decision Cards.
+    suitability scoring, confidence ratings, Warden AI Decision Cards,
+    and Student-to-Warden Room Change Approval Workflows.
     """
 
     def __init__(self):
@@ -36,12 +37,15 @@ class RoomAgent:
             target_student_id = entities.get("student_id") or student_id
             room_no = entities.get("room_no")
             return self.allocate_room(target_student_id, room_no)
-        elif intent in ["transfer_room", "change_room"]:
+        elif intent in ["transfer_room", "change_room", "request_room_transfer"]:
             target_student_id = entities.get("student_id") or student_id
             to_room_no = entities.get("to_room_no") or entities.get("room_no")
-            return self.transfer_room(target_student_id, to_room_no)
+            reason = entities.get("reason") or "Student requested room transfer after checking vacancies."
+            return self.request_room_transfer(target_student_id, to_room_no, reason)
         elif intent == "list_rooms":
             return self.list_rooms()
+        elif intent in ["list_transfers", "list_transfer_requests"]:
+            return self.list_transfer_requests()
         else:
             return {
                 "success": False,
@@ -222,7 +226,7 @@ class RoomAgent:
             return self.get_available_rooms()
 
     def allocate_room(self, student_id, room_no):
-        """Allocates a student to the best room or requested room with AI Conflict Validation."""
+        """Directly allocates a student to a room (Warden action)."""
         if not room_no:
             best_room, _ = self.find_best_available_room()
             if best_room:
@@ -274,31 +278,147 @@ class RoomAgent:
             "message": msg
         }
 
-    def transfer_room(self, student_id, to_room_no):
-        """Transfers a student from current room to destination room with AI Conflict Detection."""
+    def request_room_transfer(self, student_id, to_room_no, reason="Requested room transfer"):
+        """
+        Registers a Student Room Change Request for Warden Approval.
+        """
         if not to_room_no:
             best_room, _ = self.find_best_available_room()
             if best_room:
                 to_room_no = best_room["room_no"]
             else:
-                return {"success": False, "agent": self.name, "data": {}, "message": "No available room found for transfer."}
+                return {"success": False, "agent": self.name, "data": {}, "message": "All rooms are currently full. Cannot submit transfer request."}
+
+        # Check target room
+        target_room = query_one("SELECT * FROM rooms WHERE room_no = ? OR room_no = ?", (to_room_no, to_room_no.replace("-", "")))
+        if not target_room:
+            return {"success": False, "agent": self.name, "data": {}, "message": f"Room {to_room_no} does not exist."}
+
+        # Fetch student details & current room
+        student = query_one("""SELECT s.*, r.room_no as current_room_no 
+                               FROM students s 
+                               LEFT JOIN rooms r ON s.room_id = r.room_id 
+                               WHERE s.student_id = ?""", (student_id,))
         
-        return self.allocate_room(student_id, to_room_no)
+        if not student:
+            return {"success": False, "agent": self.name, "data": {}, "message": f"Student ID #{student_id} not found."}
+
+        from_room_no = student.get("current_room_no") or "Unassigned"
+
+        # Evaluate target room with AI
+        ai_eval = self.evaluate_room(dict(target_room))
+
+        try:
+            transfer_id = execute_query(
+                """INSERT INTO room_transfers (student_id, from_room_no, to_room_no, reason, status)
+                   VALUES (?, ?, ?, ?, 'Pending')""",
+                (student_id, from_room_no, target_room["room_no"], reason)
+            )
+
+            msg = f"📩 **Room Transfer Request Submitted to Warden**:\n\n" \
+                  f"🧠 **Autonomous AI Evaluation Card**:\n" \
+                  f"• 👤 **Student**: **{student['name']}** (Current Room: **{from_room_no}**)\n" \
+                  f"• 🏠 **Requested Room**: **{target_room['room_no']}** ({target_room['block']})\n" \
+                  f"• 📊 **Target Room Health**: **{ai_eval['health_score']}%**\n" \
+                  f"• ⚠️ **Conflict Check**: {ai_eval['conflict_summary']}\n" \
+                  f"• 💡 **AI Warden Recommendation**: **{ai_eval['recommendation']}** (Confidence: **{ai_eval['confidence']}%**)\n" \
+                  f"• ⏳ **Status**: **Pending Warden Approval** (Request ID: **#{transfer_id}**)"
+
+            logger.info(f"[RoomAgent] Room transfer request #{transfer_id} created for student #{student_id} to room {target_room['room_no']}")
+
+            return {
+                "success": True,
+                "agent": self.name,
+                "data": {
+                    "transfer_id": transfer_id,
+                    "student_id": student_id,
+                    "from_room_no": from_room_no,
+                    "to_room_no": target_room["room_no"],
+                    "status": "Pending",
+                    "ai_decision": ai_eval
+                },
+                "message": msg
+            }
+        except Exception as e:
+            logger.error(f"[RoomAgent] Error creating room transfer request: {e}")
+            return {"success": False, "agent": self.name, "data": {}, "message": f"Database error requesting room transfer: {str(e)}"}
+
+    def transfer_room(self, student_id, to_room_no):
+        """Legacy helper maps to request_room_transfer for student workflow."""
+        return self.request_room_transfer(student_id, to_room_no)
+
+    def list_transfer_requests(self):
+        """Lists all pending & historical room transfer requests for Warden Dashboard."""
+        rows = query_all("""SELECT t.*, s.name as student_name, s.roll_no, r.capacity, r.occupied_count, r.block
+                            FROM room_transfers t
+                            JOIN students s ON t.student_id = s.student_id
+                            LEFT JOIN rooms r ON t.to_room_no = r.room_no
+                            ORDER BY t.transfer_id DESC""")
+        
+        transfers_with_ai = []
+        for r in rows:
+            t_obj = dict(r)
+            target_room = query_one("SELECT * FROM rooms WHERE room_no = ?", (t_obj["to_room_no"],))
+            if target_room:
+                t_obj["ai_decision"] = self.evaluate_room(dict(target_room))
+            else:
+                t_obj["ai_decision"] = {"health_score": 100, "recommendation": "Approve Transfer", "confidence": 95, "conflict_summary": "No conflicts"}
+            transfers_with_ai.append(t_obj)
+
+        return {
+            "success": True,
+            "agent": self.name,
+            "data": {"transfers": transfers_with_ai, "count": len(transfers_with_ai)},
+            "message": f"Retrieved {len(transfers_with_ai)} room transfer requests."
+        }
+
+    def update_transfer_status(self, transfer_id, status):
+        """Warden approves or rejects a student room transfer request."""
+        valid = ["Pending", "Approved", "Rejected"]
+        if status not in valid:
+            return {"success": False, "agent": self.name, "data": {}, "message": f"Invalid status {status}"}
+
+        transfer = query_one("SELECT * FROM room_transfers WHERE transfer_id = ?", (transfer_id,))
+        if not transfer:
+            return {"success": False, "agent": self.name, "data": {}, "message": f"Transfer request #{transfer_id} not found."}
+
+        execute_query("UPDATE room_transfers SET status = ? WHERE transfer_id = ?", (status, transfer_id))
+
+        if status == "Approved":
+            # Relocate student to destination room
+            alloc_res = self.allocate_room(transfer["student_id"], transfer["to_room_no"])
+            return {
+                "success": True,
+                "agent": self.name,
+                "data": {"transfer_id": transfer_id, "status": "Approved"},
+                "message": f"Room transfer request #{transfer_id} APPROVED! Student relocated to Room {transfer['to_room_no']}."
+            }
+        else:
+            return {
+                "success": True,
+                "agent": self.name,
+                "data": {"transfer_id": transfer_id, "status": "Rejected"},
+                "message": f"Room transfer request #{transfer_id} REJECTED by Warden."
+            }
 
     def list_rooms(self):
-        """Lists all rooms with embedded AI Decision Cards for Warden Room Allocations."""
+        """Lists all rooms with embedded AI Decision Cards and pending transfer requests."""
         rooms = query_all("SELECT * FROM rooms ORDER BY block, room_no")
+        transfers = self.list_transfer_requests().get("data", {}).get("transfers", [])
         
         rooms_with_ai = []
         for r in rooms:
             r_obj = dict(r)
             r_obj["ai_decision"] = self.evaluate_room(r_obj)
+            # Find any pending transfer requests targeting this room
+            matching_transfers = [t for t in transfers if t["to_room_no"] == r_obj["room_no"] or t["from_room_no"] == r_obj["room_no"]]
+            r_obj["pending_transfers"] = matching_transfers
             rooms_with_ai.append(r_obj)
 
         return {
             "success": True,
             "agent": self.name,
-            "data": {"rooms": rooms_with_ai, "count": len(rooms_with_ai)},
+            "data": {"rooms": rooms_with_ai, "transfers": transfers, "count": len(rooms_with_ai)},
             "message": f"Retrieved {len(rooms_with_ai)} room records with AI health evaluation."
         }
 

@@ -99,3 +99,15 @@ CREATE TABLE IF NOT EXISTS chat_logs (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE SET NULL
 );
+
+-- 9. Room Transfers Table
+CREATE TABLE IF NOT EXISTS room_transfers (
+    transfer_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id INTEGER NOT NULL,
+    from_room_no TEXT,
+    to_room_no TEXT NOT NULL,
+    reason TEXT,
+    status TEXT NOT NULL DEFAULT 'Pending', -- Pending, Approved, Rejected
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE
+);

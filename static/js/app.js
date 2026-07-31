@@ -852,6 +852,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderWardenRoomsTable(rooms) {
         const tbody = document.getElementById('roomsTableBody');
+        if (!tbody) return;
         tbody.innerHTML = '';
         rooms.forEach(r => {
             const ai = r.ai_decision || {
@@ -863,6 +864,35 @@ document.addEventListener('DOMContentLoaded', () => {
             const healthColor = ai.health_score >= 90 ? '#059669' : (ai.health_score >= 70 ? '#d97706' : '#dc2626');
             const healthBg = ai.health_score >= 90 ? '#ecfdf5' : (ai.health_score >= 70 ? '#fffbeb' : '#fef2f2');
             const healthBorder = ai.health_score >= 90 ? '#a7f3d0' : (ai.health_score >= 70 ? '#fde68a' : '#fca5a5');
+
+            // Format pending room transfer requests column
+            const transfers = r.pending_transfers || [];
+            let transferHtml = '<span style="color:#94a3b8; font-size:0.75rem;">None</span>';
+
+            if (transfers.length > 0) {
+                const transferItems = transfers.map(t => {
+                    if (t.status === 'Pending') {
+                        return `
+                            <div style="background:#fef3c7; border:1px solid #fde68a; padding:0.35rem 0.5rem; border-radius:6px; margin-bottom:0.25rem; font-size:0.75rem;">
+                                <strong>📩 ${t.student_name}</strong> requested transfer to <strong>${t.to_room_no}</strong><br>
+                                <span style="font-size:0.7rem; color:#64748b;">From: ${t.from_room_no}</span>
+                                <div style="margin-top:0.3rem; display:flex; gap:0.25rem;">
+                                    <button class="btn-action btn-approve" style="font-size:0.68rem; padding:0.15rem 0.4rem;" onclick="updateRoomTransferStatus(${t.transfer_id}, 'Approved')">Approve</button>
+                                    <button class="btn-action btn-reject" style="font-size:0.68rem; padding:0.15rem 0.4rem;" onclick="updateRoomTransferStatus(${t.transfer_id}, 'Rejected')">Reject</button>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        const statusColor = t.status === 'Approved' ? '#059669' : '#dc2626';
+                        return `
+                            <div style="font-size:0.72rem; color:${statusColor}; font-weight:700; margin-bottom:0.2rem;">
+                                ${t.student_name}: ${t.status} (${t.to_room_no})
+                            </div>
+                        `;
+                    }
+                });
+                transferHtml = transferItems.join('');
+            }
 
             const tr = document.createElement('tr');
             tr.id = `row-room-${r.room_id}`;
@@ -900,10 +930,34 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <span style="font-size:0.72rem; font-weight:700; color:#475569;">Confidence: <strong>${ai.confidence}%</strong></span>
                 </td>
+                <td>
+                    ${transferHtml}
+                </td>
             `;
             tbody.appendChild(tr);
         });
     }
+
+    window.updateRoomTransferStatus = async (transferId, status) => {
+        try {
+            const res = await fetch(`/api/rooms/transfers/${transferId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            });
+            const result = await res.json();
+            if (result.success) {
+                showToast(`Room transfer request #${transferId} ${status}!`, 'success');
+                appCache.invalidate();
+                fetchWardenRooms();
+                loadWardenDashboardData();
+            } else {
+                showToast(`Error: ${result.message}`, 'error');
+            }
+        } catch (e) {
+            showToast('Network error updating room transfer request status', 'error');
+        }
+    };
 
     async function fetchWardenAuditLogs() {
         const tbody = document.getElementById('logsTableBody');

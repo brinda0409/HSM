@@ -239,6 +239,24 @@ def init_db(reset=False):
             except Exception:
                 pass
 
+            # Migration check: Ensure room_transfers table exists
+            try:
+                conn.execute("""
+                    CREATE TABLE IF NOT EXISTS room_transfers (
+                        transfer_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        student_id INTEGER NOT NULL,
+                        from_room_no TEXT,
+                        to_room_no TEXT NOT NULL,
+                        reason TEXT,
+                        status TEXT NOT NULL DEFAULT 'Pending',
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE
+                    );
+                """)
+                conn.commit()
+            except Exception:
+                pass
+
         except Exception as e:
             conn.rollback()
             logger.error(f"Error during SQLite database initialization: {e}")
