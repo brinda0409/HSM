@@ -561,18 +561,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchWardenComplaints() {
         const tbody = document.getElementById('complaintsTableBody');
-        const cached = appCache.get('warden_complaints');
-        if (cached) {
-            renderWardenComplaintsTable(cached);
-            return;
-        }
+        if (!tbody) return;
 
         renderTableSkeleton('complaintsTableBody', 9, 3);
         try {
             const res = await fetch('/api/complaints');
             const result = await res.json();
             if (result.success && result.data.complaints) {
-                appCache.set('warden_complaints', result.data.complaints);
                 renderWardenComplaintsTable(result.data.complaints);
             }
         } catch (e) {
@@ -615,19 +610,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchWardenLeaves() {
         const tbody = document.getElementById('leavesTableBody');
-        const cached = appCache.get('warden_leaves');
-        if (cached) {
-            renderWardenLeavesTable(cached);
-            updateLeaveAiInsightsUI(cached);
-            return;
-        }
+        if (!tbody) return;
 
         renderTableSkeleton('leavesTableBody', 8, 3);
         try {
             const res = await fetch('/api/leaves');
             const result = await res.json();
             if (result.success && result.data.leaves) {
-                appCache.set('warden_leaves', result.data.leaves);
                 renderWardenLeavesTable(result.data.leaves);
                 updateLeaveAiInsightsUI(result.data.leaves);
             }
@@ -719,22 +708,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchWardenVisitors() {
         const tbody = document.getElementById('visitorsTableBody');
-        const cached = appCache.get('warden_visitors');
-        if (cached) {
-            renderWardenVisitorsTable(cached);
-            return;
-        }
+        if (!tbody) return;
 
-        renderTableSkeleton('visitorsTableBody', 9, 3);
+        renderTableSkeleton('visitorsTableBody', 8, 3);
         try {
             const res = await fetch('/api/visitors');
             const result = await res.json();
             if (result.success && result.data.visitors) {
-                appCache.set('warden_visitors', result.data.visitors);
                 renderWardenVisitorsTable(result.data.visitors);
             }
         } catch (e) {
-            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#ef4444; padding:1rem;">Failed to load visitor logs.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#ef4444; padding:1rem;">Failed to load visitor logs.</td></tr>';
         }
     }
 

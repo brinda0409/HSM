@@ -132,7 +132,8 @@ class LeaveAgent:
                   f"• ⚠️ **Conflict Check**: {ai_eval['conflict_summary']}\n" \
                   f"• 🛡️ **Risk Score**: **{score}% ({risk_lbl})** — {ai_eval['risk_reason']}\n" \
                   f"• 💡 **AI Recommendation**: **{rec}** (Confidence: **{conf}%**)\n" \
-                  f"• 🎯 **Reason**: {ai_eval['reason']}"
+                  f"• 🎯 **Reason**: {ai_eval['reason']}\n" \
+                  f"• ⏳ **Status**: **Pending Warden Approval** (Waiting for Warden response)"
 
             return {
                 "success": True,
