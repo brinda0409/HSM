@@ -150,8 +150,11 @@ Respond ONLY with valid JSON inside ```json ``` block or raw JSON string. Do not
                 "entities": {"complaint_id": cmp_id_found}
             })
 
-        # 1. Complaint Check
-        if not intents and any(w in msg_lower for w in ["light", "fan", "ac", "air condition", "water", "tap", "sink", "leak", "door", "bed", "chair", "table", "wifi", "internet", "broken", "not working", "clean", "dirty", "complaint", "repair", "fix"]):
+        # 1. Complaint Check (Requires explicit complaint action or defect word and not a vacancy query)
+        has_complaint_action = any(w in msg_lower for w in ["broken", "not working", "issue", "problem", "leak", "repair", "fix", "dirty", "complaint", "damaged", "faulty", "not functioning"])
+        is_vacancy_query = any(w in msg_lower for w in ["vacancy", "vacant", "available", "availability", "empty", "free bed", "how many rooms", "room count"])
+
+        if not intents and (has_complaint_action or ("complaint" in msg_lower and not is_vacancy_query)):
             category = "Other"
             priority = "Medium"
 
@@ -327,10 +330,11 @@ Respond ONLY with valid JSON inside ```json ``` block or raw JSON string. Do not
         """
         Synthesizes a friendly, natural language response based on agent execution outputs.
         """
-        # If leave_agent, complaint_agent, visitor_agent, or room_agent returned a multi-step agentic pipeline message, preserve it directly!
-        for res in agent_results:
-            if res.get("agent") in ["leave_agent", "complaint_agent", "visitor_agent", "room_agent"] and res.get("message") and ("Autonomous" in res.get("message") or "Pipeline" in res.get("message")):
-                return res.get("message")
+        # If single worker agent returned a multi-step agentic pipeline message, preserve it directly!
+        if len(agent_results) == 1:
+            for res in agent_results:
+                if res.get("agent") in ["leave_agent", "complaint_agent", "visitor_agent", "room_agent"] and res.get("message") and ("Autonomous" in res.get("message") or "Pipeline" in res.get("message")):
+                    return res.get("message")
 
         if self.model:
             try:
